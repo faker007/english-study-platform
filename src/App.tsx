@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DefaultLayout } from "./components/Common/DefaultLayout";
 import Modal, { IModalContentArgs } from "./components/Common/Modal";
 
 function App() {
@@ -9,7 +10,7 @@ function App() {
   }
 
   return (
-    <div className="flex h-[200vh] w-full items-center justify-center">
+    <DefaultLayout>
       <button
         onClick={togglOpen}
         className="rounded-md bg-black px-10 py-3 font-medium text-white"
@@ -19,7 +20,7 @@ function App() {
       <Modal width={300} height={200} isOpen={isOpen} toggleOpen={togglOpen}>
         {ModalContent}
       </Modal>
-    </div>
+    </DefaultLayout>
   );
 }
 
