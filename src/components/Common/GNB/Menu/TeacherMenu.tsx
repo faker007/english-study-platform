@@ -25,7 +25,7 @@ export default function TeacherMenu() {
             onMouseEnter={() => handleActiveMenu("STUDENT_MANAGE")}
             className="relative h-full"
           >
-            <GNBLink text="학생 관리" url="#"></GNBLink>
+            <GNBLink text="학생 관리" url="#" />
             {activeMenu === "STUDENT_MANAGE" && (
               <LNBList data={STUDENT_MANAGE_LNB_ITEMS} />
             )}
@@ -34,7 +34,7 @@ export default function TeacherMenu() {
             onMouseEnter={() => handleActiveMenu("PROBLEM_BANK")}
             className="relative h-full"
           >
-            <GNBLink text="문제 은행" active url="#"></GNBLink>
+            <GNBLink text="문제 은행" active url="#" />
             {activeMenu === "PROBLEM_BANK" && (
               <LNBList data={PROBLEM_BANK_LNB_ITEMS} />
             )}
@@ -43,7 +43,7 @@ export default function TeacherMenu() {
             onMouseEnter={() => handleActiveMenu("TEST_MANAGE")}
             className="relative h-full"
           >
-            <GNBLink text="시험 관리" url="#"></GNBLink>
+            <GNBLink text="시험 관리" url="#" />
             {activeMenu === "TEST_MANAGE" && (
               <LNBList data={TEST_MANAGE_LNB_ITEMS} />
             )}
@@ -52,7 +52,7 @@ export default function TeacherMenu() {
             onMouseEnter={() => handleActiveMenu("ESSAY_MANAGE")}
             className="relative h-full"
           >
-            <GNBLink text="Essay 관리" url="#"></GNBLink>
+            <GNBLink text="Essay 관리" url="#" />
             {activeMenu === "ESSAY_MANAGE" && (
               <LNBList data={ESSAY_MANAGE_LNB_ITEMS} />
             )}
@@ -61,14 +61,14 @@ export default function TeacherMenu() {
             onMouseEnter={() => handleActiveMenu("REFERENCE")}
             className="relative h-full"
           >
-            <GNBLink text="자료실" url="#"></GNBLink>
+            <GNBLink text="자료실" url="#" />
             {activeMenu === "REFERENCE" && (
               <LNBList data={REFERENCE_LNB_ITEMS} />
             )}
           </li>
         </ul>
       </section>
-      <section className="h-[50px] w-full border-b border-[#6f6f6f] bg-[#f2f2f2]"></section>
+      <section className="h-[50px] w-full border-b border-[#6f6f6f] bg-[#f2f2f2]" />
     </div>
   );
 }

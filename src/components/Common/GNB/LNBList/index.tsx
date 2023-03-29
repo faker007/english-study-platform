@@ -18,7 +18,7 @@ export default function LNBList({ data }: IProps) {
             url={item.url}
             style={{ fontSize: 14 }}
             active
-          ></LNBLink>
+          />
         </li>
       ))}
     </ul>
