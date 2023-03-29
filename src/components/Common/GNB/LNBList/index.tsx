@@ -1,7 +1,11 @@
 import { ILNBItem } from "../../../../types/GNB";
-import LNBLink from "../LNBLink";
+import LNBLink from "../Link/lnb";
 
-export default function LNBList({ data }: { data: ILNBItem[] }) {
+interface IProps {
+  data: ILNBItem[];
+}
+
+export default function LNBList({ data }: IProps) {
   return (
     <ul className="absolute flex h-[50px] gap-[20px]">
       {data.map((item) => (
