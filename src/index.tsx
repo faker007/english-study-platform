@@ -3,12 +3,13 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import GNB from "./components/Common/GNB";
+import GNBWrapper from "./components/Common/GNB/Wrapper";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <GNBWrapper />,
+    children: [{ path: "/", element: <App /> }],
   },
 ]);
 
@@ -18,7 +19,6 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <GNB />
     <RouterProvider router={router} />
   </React.StrictMode>
 );

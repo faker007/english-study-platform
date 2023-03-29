@@ -3,10 +3,10 @@ import StudentMenu from "./Menu/StudentMenu";
 import TeacherMenu from "./Menu/TeacherMenu";
 
 interface IProps {
-  role?: "STUDENT" | "TEACHER" | "ADMIN";
+  role: "STUDENT" | "TEACHER" | "ADMIN";
 }
 
-export default function GNB({ role = "TEACHER" }: IProps) {
+export default function GNB({ role }: IProps) {
   return (
     <header className="mb-[30px] w-full">
       <AuthMenu />
