@@ -5,6 +5,7 @@ import "./customCSS.css";
 
 import App from "./App";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import GNBWrapper from "./components/Common/GNB/Wrapper";
 
 /** Own pages */
 import ProblemBank from "./pages/ProblemBank";
@@ -12,7 +13,8 @@ import ProblemBank from "./pages/ProblemBank";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <GNBWrapper />,
+    children: [{ path: "/", element: <App /> }],
   },
   {
     path: "/problem-bank",
