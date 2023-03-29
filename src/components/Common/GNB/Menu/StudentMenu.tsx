@@ -1,4 +1,4 @@
-import GNBLink from "../GNBLink";
+import GNBLink from "../Link/gnb";
 
 export default function StudentMenu() {
   return (

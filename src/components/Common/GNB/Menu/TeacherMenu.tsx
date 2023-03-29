@@ -7,7 +7,7 @@ import {
   TEST_MANAGE_LNB_ITEMS,
 } from "../../../../constants/GNB";
 import { TeacherMenuItems } from "../../../../types/GNB";
-import GNBLink from "../GNBLink";
+import GNBLink from "../Link/gnb";
 import LNBList from "../LNBList";
 
 export default function TeacherMenu() {
