@@ -1,9 +1,10 @@
+import { UserRole } from "../../../types";
 import AuthMenu from "./AuthMenu";
 import StudentMenu from "./Menu/StudentMenu";
 import TeacherMenu from "./Menu/TeacherMenu";
 
 interface IProps {
-  role: "STUDENT" | "TEACHER" | "ADMIN";
+  role: UserRole;
 }
 
 export default function GNB({ role }: IProps) {

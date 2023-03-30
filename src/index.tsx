@@ -4,6 +4,7 @@ import "./index.css";
 import App from "./App";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import GNBWrapper from "./components/Common/GNB/Wrapper";
+import Login from "./pages/login";
 
 const router = createBrowserRouter([
   {
@@ -11,6 +12,7 @@ const router = createBrowserRouter([
     element: <GNBWrapper />,
     children: [{ path: "/", element: <App /> }],
   },
+  { path: "/login", element: <Login /> },
 ]);
 
 const root = ReactDOM.createRoot(
