@@ -21,8 +21,8 @@ export default function Modal({
   fullscreen,
 }: IProps) {
   const style: React.CSSProperties = {
-    width: width ? width : fullscreen ? "100%" : "",
-    height: height ? height : fullscreen ? "100%" : "",
+    width: width ? width : fullscreen ? "95%" : "",
+    height: height ? height : fullscreen ? "95%" : "",
   };
 
   useEffect(() => {
@@ -43,7 +43,11 @@ export default function Modal({
       onClick={toggleOpen}
       className="fixed inset-0 z-[99] flex items-center justify-center bg-black bg-opacity-50"
     >
-      <main style={style} onClick={(e) => e.stopPropagation()}>
+      <main
+        style={style}
+        className="overflow-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {children({ isOpen, toggleOpen })}
       </main>
     </div>
