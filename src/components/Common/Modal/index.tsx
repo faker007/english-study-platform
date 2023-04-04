@@ -21,8 +21,8 @@ export default function Modal({
   fullscreen,
 }: IProps) {
   const style: React.CSSProperties = {
-    width: width ? width : fullscreen ? "100%" : "",
-    height: height ? height : fullscreen ? "100%" : "",
+    width: width ? width : fullscreen ? "95%" : "",
+    height: height ? height : fullscreen ? "95%" : "",
   };
 
   useEffect(() => {

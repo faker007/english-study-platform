@@ -2,12 +2,29 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
+
+thead {
+  height: 45px;
+  border-top: 2px solid #333;
+  border-bottom: 1px solid #999;
+  font-size: 16px;
+  color: #333;
+}
+
 tbody {
   display: table-row-group;
   vertical-align: middle;
   border-collapse: inherit;
 }
 
+th {
+  background-color: rgb(220, 220, 220);
+}
+
 td {
+  height: 50px;
   text-align: center;
+  border-bottom: 1px solid #e5e5e5;
+  font-size: 14px;
+  color: #666;
 }
