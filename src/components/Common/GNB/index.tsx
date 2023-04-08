@@ -1,4 +1,4 @@
-import { UserRole } from "../../../types";
+import { UserRole } from "../../api/models";
 import AuthMenu from "./AuthMenu";
 import StudentMenu from "./Menu/StudentMenu";
 import TeacherMenu from "./Menu/TeacherMenu";
@@ -13,7 +13,6 @@ export default function GNB({ role }: IProps) {
       <AuthMenu />
       {role === "STUDENT" && <StudentMenu />}
       {role === "TEACHER" && <TeacherMenu />}
-      {role === "ADMIN" && <TeacherMenu />}
     </header>
   );
 }
