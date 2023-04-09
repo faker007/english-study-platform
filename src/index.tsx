@@ -6,6 +6,9 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import GNBWrapper from "./components/Common/GNB/Wrapper";
 import Login from "./pages/login";
 import Router from "./pages/router";
+import StudentList from "./pages/students/list";
+import Students from "./pages/students";
+import StudentGroup from "./pages/students/group";
 
 const router = createBrowserRouter([
   {
@@ -15,7 +18,17 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <GNBWrapper />,
-        children: [{ path: "/", element: <App /> }],
+        children: [
+          { path: "/", element: <App /> },
+          {
+            path: "students",
+            element: <Students />,
+            children: [
+              { path: "list", element: <StudentList /> },
+              { path: "group", element: <StudentGroup /> },
+            ],
+          },
+        ],
       },
       { path: "/login", element: <Login /> },
     ],
