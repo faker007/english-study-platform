@@ -5,8 +5,8 @@ import { IUser, UserRole } from "../../components/api/models";
 import { ILoginForm } from "../../types/Login";
 import { fbAuth } from "../../firebase";
 
-export async function getUserFromFirestore(user: User) {
-  const userDocQuery = query(USER_COLLECTION, where("uid", "==", user.uid));
+export async function getUserFromFirestore(uid:string) {
+  const userDocQuery = query(USER_COLLECTION, where("uid", "==", uid));
   const querySnapshot = await getDocs(userDocQuery);
 
   if (!querySnapshot.empty) {

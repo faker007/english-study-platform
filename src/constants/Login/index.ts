@@ -17,3 +17,5 @@ export const PASSWORD_INPUT_OPTIONS: RegisterOptions = {
     message: "비밀번호를 입력해 주세요.",
   },
 };
+
+export const LOCALSTORAGE_ID_REMEBER = "ID_REMEMBER";

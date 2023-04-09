@@ -1,6 +1,7 @@
 import { useForm, SubmitErrorHandler, SubmitHandler } from "react-hook-form";
 import {
   ID_INPUT_OPTIONS,
+  LOCALSTORAGE_ID_REMEBER,
   PASSWORD_INPUT_OPTIONS,
 } from "../../../constants/Login";
 import { ILoginForm } from "../../../types/Login";
@@ -9,24 +10,39 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { fbAuth } from "../../../firebase";
 import { UserRole } from "../../api/models";
 import { checkUserRole, getUserFromFirestore } from "../../../utils/Login";
+import { useCallback, useEffect, useState } from "react";
 
 interface IProps {
   role: UserRole;
 }
 
 export default function LoginForm({ role }: IProps) {
-  const { register, handleSubmit, reset } = useForm<ILoginForm>();
+  const [isLoading, setIsLoading] = useState(false);
+  const { register, handleSubmit, reset, setValue } = useForm<ILoginForm>();
   const navigate = useNavigate();
 
-  const onSubmit: SubmitHandler<ILoginForm> = async ({ id, password }) => {
+  const onSubmit: SubmitHandler<ILoginForm> = async ({
+    id,
+    password,
+    idRemember,
+  }) => {
+    setIsLoading(true);
+
     try {
       const { user } = await signInWithEmailAndPassword(fbAuth, id, password);
 
       if (user) {
-        const firestoreUserData = await getUserFromFirestore(user);
+        const firestoreUserData = await getUserFromFirestore(user.uid);
         const isRoleValidate = checkUserRole({ role, user: firestoreUserData });
 
         if (isRoleValidate) {
+          if (idRemember) {
+            window.localStorage.setItem(
+              LOCALSTORAGE_ID_REMEBER,
+              JSON.stringify({ id: firestoreUserData?.email || "", role })
+            );
+          }
+
           alert(`환영합니다 ${firestoreUserData?.email}님`);
           navigate("/");
         } else {
@@ -39,12 +55,38 @@ export default function LoginForm({ role }: IProps) {
     } finally {
       reset();
     }
+
+    setIsLoading(false);
   };
 
   const onInValid: SubmitErrorHandler<ILoginForm> = ({ id, password }) => {
     id?.message && alert(id.message);
     password?.message && alert(password.message);
   };
+
+  const updateFormDataFromLocalstorage = useCallback(() => {
+    const localstorageIdRemember = window.localStorage.getItem(
+      LOCALSTORAGE_ID_REMEBER
+    );
+
+    if (localstorageIdRemember) {
+      const parsedData = JSON.parse(localstorageIdRemember) as {
+        role: UserRole;
+        id: string;
+      };
+
+      if (parsedData.role === role) {
+        setValue("id", parsedData.id);
+        setValue("idRemember", true);
+      } else {
+        reset();
+      }
+    }
+  }, [role, setValue, reset]);
+
+  useEffect(() => {
+    updateFormDataFromLocalstorage();
+  }, [updateFormDataFromLocalstorage]);
 
   return (
     <>
@@ -70,7 +112,7 @@ export default function LoginForm({ role }: IProps) {
           />
         </div>
         <div className="flex items-center gap-1">
-          <input id="id-save" type={"checkbox"} />
+          <input id="id-save" type={"checkbox"} {...register("idRemember")} />
           <label
             htmlFor="id-save"
             className="select-none text-[11px] text-[#666]"
@@ -82,7 +124,7 @@ export default function LoginForm({ role }: IProps) {
           type="submit"
           className="h-[50px] w-full bg-[#28428e] text-[18px] font-bold text-white"
         >
-          로그인
+          {isLoading ? "로그인 중..." : "로그인"}
         </button>
       </form>
     </>
