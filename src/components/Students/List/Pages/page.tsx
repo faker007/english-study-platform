@@ -1,12 +1,11 @@
 import classNames from "classnames";
 
-export default function Page({
-  active = false,
-  goto,
-}: {
+interface IProps {
   active?: boolean;
-  goto: number;
-}) {
+  value: number;
+}
+
+export default function Page({ active = false, value }: IProps) {
   return (
     <button
       className={classNames(
@@ -16,7 +15,7 @@ export default function Page({
         }
       )}
     >
-      {goto}
+      {value}
     </button>
   );
 }

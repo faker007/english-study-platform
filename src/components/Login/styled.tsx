@@ -1,5 +1,5 @@
 import { DEFAULT_IMAGE_DIR } from "../../constants";
-import { UserRole } from "../../api/models";
+import { TUserRole } from "../../api/models";
 import LoginForm from "./Form";
 import classNames from "classnames";
 
@@ -7,7 +7,7 @@ export function LoginSection({
   toggleRole,
   role,
 }: {
-  role: UserRole;
+  role: TUserRole;
   toggleRole: () => void;
 }) {
   const roleText = role === "STUDENT" ? "학생" : "강사";
@@ -37,7 +37,7 @@ export function LoginSection({
   );
 }
 
-export function CBTPrep({ role }: { role: UserRole }) {
+export function CBTPrep({ role }: { role: TUserRole }) {
   return (
     <section
       className={classNames("w-full", {

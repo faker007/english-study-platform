@@ -1,4 +1,9 @@
-export type UserRole = "STUDENT" | "TEACHER";
+export const UserRole = {
+  STUDENT: "STUDENT",
+  TEACHER: "TEACHER",
+} as const;
+
+export type TUserRole = keyof typeof UserRole;
 
 interface ICommonModel {
   id: string;
@@ -11,7 +16,7 @@ export interface IUser extends ICommonModel {
   name: string;
   email: string;
   phoneNumber: string;
-  role: UserRole;
+  role: TUserRole;
   groupIDs: string[];
 }
 

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { LOGIN_BG_STUDENT, LOGIN_BG_TEACHER } from "../constants/Login";
 import { CBTPrep, LoginSection } from "../components/Login/styled";
-import { UserRole } from "../api/models";
+import { TUserRole } from "../api/models";
 
 export default function Login() {
-  const [role, setRole] = useState<UserRole>("STUDENT");
+  const [role, setRole] = useState<TUserRole>("STUDENT");
 
   function toggleRole() {
     setRole((prev) => (prev === "STUDENT" ? "TEACHER" : "STUDENT"));

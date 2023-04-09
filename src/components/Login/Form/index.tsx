@@ -7,17 +7,19 @@ import {
 import { ILoginForm } from "../../../types/Login";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { fbAuth } from "../../../firebase";
-import { UserRole } from "../../../api/models";
+import { fbAuth, fbStore } from "../../../firebase";
+import { TUserRole } from "../../../api/models";
 import {
   checkUserRole,
   getUserFromFirestore,
   updateLocalstorageIdRemember,
+  updateUserRecentLoginTime,
 } from "../../../utils/Login";
 import { useCallback, useEffect, useState } from "react";
+import { doc, updateDoc } from "firebase/firestore";
 
 interface IProps {
-  role: UserRole;
+  role: TUserRole;
 }
 
 export default function LoginForm({ role }: IProps) {
@@ -39,12 +41,14 @@ export default function LoginForm({ role }: IProps) {
         const firestoreUserData = await getUserFromFirestore(user.uid);
         const isRoleValidate = checkUserRole({ role, user: firestoreUserData });
 
-        if (isRoleValidate) {
+        if (firestoreUserData && isRoleValidate) {
           updateLocalstorageIdRemember({
             id: firestoreUserData?.email || "",
             idRemember,
             role,
           });
+
+          await updateUserRecentLoginTime(firestoreUserData);
 
           alert(`환영합니다 ${firestoreUserData?.email}님`);
           navigate("/");
@@ -74,7 +78,7 @@ export default function LoginForm({ role }: IProps) {
 
     if (localstorageIdRemember) {
       const parsedData = JSON.parse(localstorageIdRemember) as {
-        role: UserRole;
+        role: TUserRole;
         id: string;
       };
 

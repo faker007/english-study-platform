@@ -1,9 +1,16 @@
-import { addDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
+import {
+  addDoc,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { USER_COLLECTION } from "../../api/collections";
 import { User, createUserWithEmailAndPassword } from "firebase/auth";
-import { IUser, UserRole } from "../../api/models";
+import { IUser, TUserRole } from "../../api/models";
 import { ILoginForm } from "../../types/Login";
-import { fbAuth } from "../../firebase";
+import { fbAuth, fbStore } from "../../firebase";
 import { LOCALSTORAGE_ID_REMEBER } from "../../constants/Login";
 
 export async function getUserFromFirestore(uid: string) {
@@ -22,7 +29,7 @@ export function checkUserRole({
   user,
 }: {
   user: IUser | null;
-  role: UserRole;
+  role: TUserRole;
 }) {
   return user?.role === role;
 }
@@ -32,7 +39,7 @@ export async function syncUserToFirestore({
   user,
 }: {
   user: User;
-  role: UserRole;
+  role: TUserRole;
 }) {
   const userData: IUser = {
     id: "",
@@ -53,17 +60,12 @@ export async function createUser({
   id,
   password,
   role,
-}: ILoginForm & { role: UserRole }) {
-  try {
-    const { user } = await createUserWithEmailAndPassword(fbAuth, id, password);
+}: ILoginForm & { role: TUserRole }) {
+  const { user } = await createUserWithEmailAndPassword(fbAuth, id, password);
 
-    if (user) {
-      await syncUserToFirestore({ user, role });
-      alert("성공적으로 가입이 완료 되었습니다.");
-    }
-  } catch (error) {
-    console.error(error);
-    alert(error);
+  if (user) {
+    await syncUserToFirestore({ user, role });
+    alert("성공적으로 가입이 완료 되었습니다.");
   }
 }
 
@@ -74,7 +76,7 @@ export function updateLocalstorageIdRemember({
 }: {
   idRemember: boolean;
   id: string;
-  role: UserRole;
+  role: TUserRole;
 }) {
   if (idRemember) {
     window.localStorage.setItem(
@@ -84,4 +86,10 @@ export function updateLocalstorageIdRemember({
   } else {
     window.localStorage.removeItem(LOCALSTORAGE_ID_REMEBER);
   }
+}
+
+export async function updateUserRecentLoginTime(user: IUser) {
+  return updateDoc(doc(fbStore, `user/${user.id}`), {
+    updatedAt: new Date().toISOString(),
+  });
 }

@@ -1,9 +1,24 @@
 import TableItem from "./TableItem";
+import dayjs from "dayjs";
+import Spinner from "../../../Common/Spinner";
+import { IUser } from "../../../../api/models";
+import { PAGE_PER } from "../../../../constants/Students";
 
-export default function UserListTable() {
+interface IProps {
+  isLoading: boolean;
+  students: IUser[];
+  page: number;
+}
+
+export default function UserListTable({ isLoading, students, page }: IProps) {
+  const currentPageStudents = students.slice(
+    PAGE_PER * page - PAGE_PER,
+    PAGE_PER * page
+  );
+
   return (
     <>
-      <table className="mt-[10px] w-full">
+      <table className="mt-[10px] w-full table-fixed">
         <colgroup>
           <col className="w-[60px]"></col>
           <col className="w-[120px]"></col>
@@ -38,24 +53,34 @@ export default function UserListTable() {
             </th>
           </tr>
         </thead>
-        <tbody>
-          {Array.from({ length: 10 }).map((_, i) => (
-            <TableItem
-              key={i}
-              id="test001"
-              index={1}
-              lock="lock"
-              name="테스트"
-              phoneNumber="01031773516"
-              recentLogin="2023-04-09 12:05"
-              status="사용"
-            />
-          ))}
+        <tbody className="relative">
+          {isLoading ? (
+            <div className="absolute top-0 left-0 flex w-full items-center justify-center">
+              <Spinner />
+            </div>
+          ) : (
+            currentPageStudents.map((student, i) => (
+              <TableItem
+                key={student.id}
+                id={student.email}
+                index={i + 1}
+                lock="lock"
+                name={student.name || "김찬공"}
+                phoneNumber={student.phoneNumber || "0101234567"}
+                recentLogin={dayjs(student.updatedAt).format(
+                  "YYYY-MM-DD HH:mm"
+                )}
+                status="사용"
+              />
+            ))
+          )}
         </tbody>
       </table>
-      <div className="mt-[10px] w-full text-end text-[13px] text-[#888]">
-        *count : 26
-      </div>
+      {!isLoading && (
+        <div className="mt-[10px] w-full text-end text-[13px] text-[#888]">
+          *count : {students.length}
+        </div>
+      )}
     </>
   );
 }
