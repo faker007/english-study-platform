@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { LOGIN_BG_STUDENT, LOGIN_BG_TEACHER } from "../constants/Login";
 import { CBTPrep, LoginSection } from "../components/Login/styled";
-import { UserRole } from "../components/api/models";
+import { UserRole } from "../api/models";
 
 export default function Login() {
   const [role, setRole] = useState<UserRole>("STUDENT");

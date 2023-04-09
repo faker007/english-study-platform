@@ -1,7 +1,7 @@
 import { addDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
-import { USER_COLLECTION } from "../../components/api/collections";
+import { USER_COLLECTION } from "../../api/collections";
 import { User, createUserWithEmailAndPassword } from "firebase/auth";
-import { IUser, UserRole } from "../../components/api/models";
+import { IUser, UserRole } from "../../api/models";
 import { ILoginForm } from "../../types/Login";
 import { fbAuth } from "../../firebase";
 import { LOCALSTORAGE_ID_REMEBER } from "../../constants/Login";

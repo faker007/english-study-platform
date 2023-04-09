@@ -8,7 +8,7 @@ import { ILoginForm } from "../../../types/Login";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { fbAuth } from "../../../firebase";
-import { UserRole } from "../../api/models";
+import { UserRole } from "../../../api/models";
 import {
   checkUserRole,
   getUserFromFirestore,

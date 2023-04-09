@@ -1,4 +1,4 @@
-import { UserRole } from "../../api/models";
+import { UserRole } from "../../../api/models";
 import AuthMenu from "./AuthMenu";
 import StudentMenu from "./Menu/StudentMenu";
 import TeacherMenu from "./Menu/TeacherMenu";

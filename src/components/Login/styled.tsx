@@ -1,5 +1,5 @@
 import { DEFAULT_IMAGE_DIR } from "../../constants";
-import { UserRole } from "../api/models";
+import { UserRole } from "../../api/models";
 import LoginForm from "./Form";
 import classNames from "classnames";
 
