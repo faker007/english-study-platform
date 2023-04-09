@@ -4,8 +4,9 @@ import { User, createUserWithEmailAndPassword } from "firebase/auth";
 import { IUser, UserRole } from "../../components/api/models";
 import { ILoginForm } from "../../types/Login";
 import { fbAuth } from "../../firebase";
+import { LOCALSTORAGE_ID_REMEBER } from "../../constants/Login";
 
-export async function getUserFromFirestore(uid:string) {
+export async function getUserFromFirestore(uid: string) {
   const userDocQuery = query(USER_COLLECTION, where("uid", "==", uid));
   const querySnapshot = await getDocs(userDocQuery);
 
@@ -63,5 +64,24 @@ export async function createUser({
   } catch (error) {
     console.error(error);
     alert(error);
+  }
+}
+
+export function updateLocalstorageIdRemember({
+  id,
+  idRemember,
+  role,
+}: {
+  idRemember: boolean;
+  id: string;
+  role: UserRole;
+}) {
+  if (idRemember) {
+    window.localStorage.setItem(
+      LOCALSTORAGE_ID_REMEBER,
+      JSON.stringify({ id, role })
+    );
+  } else {
+    window.localStorage.removeItem(LOCALSTORAGE_ID_REMEBER);
   }
 }

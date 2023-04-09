@@ -9,7 +9,11 @@ import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { fbAuth } from "../../../firebase";
 import { UserRole } from "../../api/models";
-import { checkUserRole, getUserFromFirestore } from "../../../utils/Login";
+import {
+  checkUserRole,
+  getUserFromFirestore,
+  updateLocalstorageIdRemember,
+} from "../../../utils/Login";
 import { useCallback, useEffect, useState } from "react";
 
 interface IProps {
@@ -36,12 +40,11 @@ export default function LoginForm({ role }: IProps) {
         const isRoleValidate = checkUserRole({ role, user: firestoreUserData });
 
         if (isRoleValidate) {
-          if (idRemember) {
-            window.localStorage.setItem(
-              LOCALSTORAGE_ID_REMEBER,
-              JSON.stringify({ id: firestoreUserData?.email || "", role })
-            );
-          }
+          updateLocalstorageIdRemember({
+            id: firestoreUserData?.email || "",
+            idRemember,
+            role,
+          });
 
           alert(`환영합니다 ${firestoreUserData?.email}님`);
           navigate("/");
