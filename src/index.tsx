@@ -9,6 +9,7 @@ import Router from "./pages/router";
 import StudentList from "./pages/students/list";
 import Students from "./pages/students";
 import StudentGroup from "./pages/students/group";
+import { RecoilRoot } from "recoil";
 
 const router = createBrowserRouter([
   {
@@ -41,6 +42,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <RecoilRoot>
+      <RouterProvider router={router} />
+    </RecoilRoot>
   </React.StrictMode>
 );

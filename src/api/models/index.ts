@@ -22,5 +22,6 @@ export interface IUser extends ICommonModel {
 
 export interface IStudentGroup extends ICommonModel {
   studentIDs: string[];
+  teacherID: string;
   name: string;
 }
