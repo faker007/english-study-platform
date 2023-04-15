@@ -18,6 +18,7 @@ export interface IUser extends ICommonModel {
   phoneNumber: string;
   role: TUserRole;
   groupIDs: string[];
+  isEnabled: boolean;
 }
 
 export interface IStudentGroup extends ICommonModel {

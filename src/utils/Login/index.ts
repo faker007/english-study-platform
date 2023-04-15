@@ -37,18 +37,23 @@ export function checkUserRole({
 export async function syncUserToFirestore({
   role,
   user,
+  name,
+  phoneNumber,
 }: {
   user: User;
   role: TUserRole;
+  phoneNumber?: string;
+  name?: string;
 }) {
   const userData: IUser = {
     id: "",
     role,
     email: user.email || "",
-    name: user.displayName || "",
-    phoneNumber: user.phoneNumber || "",
+    name: user.displayName || name || "",
+    phoneNumber: user.phoneNumber || phoneNumber || "",
     uid: user.uid,
     groupIDs: [],
+    isEnabled: true,
     updatedAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),
   };
@@ -60,12 +65,20 @@ export async function createUser({
   id,
   password,
   role,
-}: ILoginForm & { role: TUserRole }) {
+  name,
+  phoneNumber,
+}: ILoginForm & {
+  role: TUserRole;
+  phoneNumber?: string;
+  name?: string;
+}) {
   const { user } = await createUserWithEmailAndPassword(fbAuth, id, password);
 
   if (user) {
-    await syncUserToFirestore({ user, role });
-    alert("성공적으로 가입이 완료 되었습니다.");
+    await syncUserToFirestore({ user, role, name, phoneNumber });
+    return true;
+  } else {
+    return false;
   }
 }
 

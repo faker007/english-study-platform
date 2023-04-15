@@ -7,7 +7,7 @@ import {
 import { ILoginForm } from "../../../types/Login";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { fbAuth, fbStore } from "../../../firebase";
+import { fbAuth } from "../../../firebase";
 import { TUserRole } from "../../../api/models";
 import {
   checkUserRole,
@@ -16,7 +16,6 @@ import {
   updateUserRecentLoginTime,
 } from "../../../utils/Login";
 import { useCallback, useEffect, useState } from "react";
-import { doc, updateDoc } from "firebase/firestore";
 
 interface IProps {
   role: TUserRole;

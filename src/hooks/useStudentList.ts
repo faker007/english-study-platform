@@ -27,7 +27,7 @@ export default function useStudentList() {
       if (!querySnapshot.empty) {
         const container: IUser[] = [];
 
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach(async (doc) => {
           container.push(doc.data() as IUser);
         });
 
@@ -72,6 +72,7 @@ export default function useStudentList() {
     students: filteredStudents,
     error,
     lastPage,
+    refetch: fetchStudentList,
   };
 }
 

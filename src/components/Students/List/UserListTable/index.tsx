@@ -70,7 +70,7 @@ export default function UserListTable({ isLoading, students, page }: IProps) {
                 recentLogin={dayjs(student.updatedAt).format(
                   "YYYY-MM-DD HH:mm"
                 )}
-                status="사용"
+                isEnabled={student.isEnabled}
               />
             ))
           )}

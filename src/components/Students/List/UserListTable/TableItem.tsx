@@ -5,14 +5,14 @@ export default function TableItem({
   name,
   phoneNumber,
   recentLogin,
-  status,
+  isEnabled,
 }: {
   index: number;
   name: string;
   id: string;
   phoneNumber: string;
   recentLogin: string;
-  status: string;
+  isEnabled: boolean;
   lock: string;
 }) {
   return (
@@ -33,7 +33,7 @@ export default function TableItem({
         {recentLogin}
       </td>
       <td className="h-[50px] break-all border-b border-[#e5e5e5] text-center text-[14px] text-[#666]">
-        {status}
+        {isEnabled ? "사용" : "불가"}
       </td>
       <td className="h-[50px] break-all border-b border-[#e5e5e5] text-center text-[14px] text-[#666]">
         <button className="rounded-[6px] border border-[#d9d9d9] bg-white px-3 py-1 text-[13px] text-[#777] hover:bg-[#d9d9d9]">
