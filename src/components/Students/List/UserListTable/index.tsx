@@ -62,7 +62,8 @@ export default function UserListTable({ isLoading, students, page }: IProps) {
             currentPageStudents.map((student, i) => (
               <TableItem
                 key={student.id}
-                id={student.email}
+                email={student.email}
+                docId={student.id}
                 index={i + 1}
                 lock="lock"
                 name={student.name || "김찬공"}

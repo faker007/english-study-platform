@@ -1,116 +1,88 @@
-import { RegisterOptions, SubmitHandler, useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { IModalContentArgs } from "../../../Common/Modal";
 import { useContext } from "react";
 import { RefetchStudentListContext } from "../../../../pages/students/list";
-import { createUser } from "../../../../utils/Login";
-import { USER_COLLECTION } from "../../../../api/collections";
-import { getDocs, query, where } from "firebase/firestore";
-import ModalFrame from "../../../Common/Modal/ModalFrame";
+import { doc, updateDoc } from "firebase/firestore";
+import { fbAuth, fbStore } from "../../../../firebase";
 import { 초기_패스워드_값_생성 } from "../../../../utils/Students";
+import ModalFrame from "../../../Common/Modal/ModalFrame";
+import { signOut, updateCurrentUser } from "firebase/auth";
 
-interface IModalContentForm {
+const EnabledTypes = {
+  ENABLED: "ENABLED",
+  DISABLED: "DISABLED",
+} as const;
+
+type EnabledType = keyof typeof EnabledTypes;
+
+interface IForm {
   email: string;
   name: string;
   password: string;
   phoneNumber: string;
+  enabled: EnabledType;
 }
 
-const EmailOptions: RegisterOptions = {
-  required: true,
-  minLength: 5,
-  pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-};
-const NameOptions: RegisterOptions = {
-  required: true,
-};
-const PasswordOptions: RegisterOptions = {
-  required: true,
-  minLength: 5,
-};
-const PhoneNumberOptions: RegisterOptions = {
-  required: true,
-  pattern: /^[0-9]+$/,
-};
+interface IModalContentProps extends IModalContentArgs {
+  email: string;
+  name: string;
+  phoneNumber: string;
+  isEnabled: boolean;
+  docId: string;
+}
 
 const MIN_PASSWORD_LENGTH = 6;
 
 export default function ModalContent({
   toggleOpen,
   isOpen,
-}: IModalContentArgs) {
-  const {
-    register,
-    handleSubmit,
-    getValues,
-    setValue,
-    formState: { errors, dirtyFields },
-  } = useForm<IModalContentForm>({ mode: "onChange" });
+  email,
+  name,
+  phoneNumber,
+  isEnabled,
+  docId,
+}: IModalContentProps) {
+  const { register, handleSubmit, setValue } = useForm<IForm>({
+    defaultValues: {
+      email,
+      name,
+      phoneNumber,
+      enabled: isEnabled ? EnabledTypes.ENABLED : EnabledTypes.DISABLED,
+    },
+  });
   const { refetch } = useContext(RefetchStudentListContext);
 
-  const onSubmit: SubmitHandler<IModalContentForm> = async ({
-    email,
+  const onSubmit: SubmitHandler<IForm> = async ({
+    enabled,
     name,
     password,
     phoneNumber,
   }) => {
     try {
-      if (!(await 이메일_중복_확인()))
-        return alert("입력한 데이터에 문제가 있습니다.");
+      const targetDoc = doc(fbStore, "user", docId);
 
-      const isOk = await createUser({
-        id: email,
-        idRemember: false,
-        password,
-        role: "STUDENT",
-        phoneNumber,
+      await updateDoc(targetDoc, {
         name,
+        phoneNumber,
+        isEnabled: enabled === "ENABLED",
       });
 
-      if (isOk) {
-        alert("유저 생성 완료.");
-        await refetch();
-        toggleOpen();
-      }
+      // todo: update password if needed.
+
+      alert("업데이트 완료.");
+      await refetch();
+      toggleOpen();
     } catch (error) {
       console.error(error);
     }
   };
 
-  async function 이메일_중복_확인() {
-    if (!isEmailValidate) return false;
-
-    try {
-      const q = query(
-        USER_COLLECTION,
-        where("email", "==", getValues("email"))
-      );
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        // 중복 발생
-        alert("중복된 아이디입니다.");
-        return false;
-      }
-      // 중복 없음
-      alert("사용 가능한 아이디입니다.");
-      return true;
-    } catch (error) {
-      console.error(error);
-      return false;
-    }
-  }
-
-  function handleClickCreatePassword() {
+  const handleClickCreatePassword = () => {
     setValue("password", 초기_패스워드_값_생성(MIN_PASSWORD_LENGTH));
-  }
-
-  // 버튼 클릭 안되는 조건
-  // 1. 아직 유저 입력을 받지 않음
-  // 2. 에러가 남아있음.
-  const isEmailValidate = dirtyFields.email && !errors.email;
+  };
 
   return (
-    <ModalFrame title="학생 정보-등록" isOpen={isOpen} toggleOpen={toggleOpen}>
+    <ModalFrame title="학생 정보-수정 " isOpen={isOpen} toggleOpen={toggleOpen}>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="mx-auto flex w-fit flex-col"
@@ -126,19 +98,17 @@ export default function ModalContent({
             <input
               id="email"
               type="email"
+              readOnly
               placeholder="아이디는 이메일 형태, 영문/숫자 5자리 이상 입력"
-              className="h-[34px] w-[260px] bg-[#fafafa] px-[5px] text-[14px] text-[#666]"
-              {...register("email", EmailOptions)}
+              className="h-[34px] w-[260px] bg-[#fafafa] px-[5px] text-[14px] text-[#666] outline-none"
+              {...register("email")}
             />
 
             <button
               type="button"
-              onClick={이메일_중복_확인}
-              disabled={!isEmailValidate}
-              className="h-[32px] w-[88px] border border-[#d9d9d9] bg-white text-[13px] text-[#777] disabled:cursor-not-allowed"
-            >
-              중복 확인
-            </button>
+              disabled={true}
+              className="invisible h-[32px] w-[88px] border border-[#d9d9d9] bg-white text-[13px] text-[#777] disabled:cursor-not-allowed"
+            ></button>
           </div>
         </section>
         <section aria-label="name-input" className="flex items-end gap-[12px]">
@@ -153,7 +123,7 @@ export default function ModalContent({
               id="name"
               type="text"
               className="h-[34px] w-[260px] bg-[#fafafa] px-[5px] text-[14px] text-[#666]"
-              {...register("name", NameOptions)}
+              {...register("name")}
             />
             <button
               type="button"
@@ -176,9 +146,9 @@ export default function ModalContent({
             <input
               id="password"
               type="text"
-              placeholder={`비밀번호는 영문/숫자 ${MIN_PASSWORD_LENGTH}자리 이상 입력`}
+              placeholder="변경시에만 입력해주세요."
               className="h-[34px] w-[260px] bg-[#fafafa] px-[5px] text-[14px] text-[#666]"
-              {...register("password", PasswordOptions)}
+              {...register("password")}
             />
             <button
               type="button"
@@ -205,13 +175,38 @@ export default function ModalContent({
               type="text"
               placeholder="숫자만 입력해주세요."
               className="h-[34px] w-[260px] bg-[#fafafa] px-[5px] text-[14px] text-[#666]"
-              {...register("phoneNumber", PhoneNumberOptions)}
+              {...register("phoneNumber")}
             />
             <button
               type="button"
               disabled={true}
               className="invisible h-[32px] w-[88px] border border-[#d9d9d9] bg-white text-[13px] text-[#777]"
             ></button>
+          </div>
+        </section>
+        <section aria-label="enabled-radio" className="flex gap-[12px]">
+          <label className="h-[53px] w-[150px] border-b border-[#ddd] pl-[12px] pt-[12px] text-[15px] text-[#333]">
+            사용여부
+          </label>
+          <div className="flex flex-1 items-center gap-[10px] border-b border-[#777] pb-[5px]">
+            <div>
+              <input
+                type="radio"
+                id={EnabledTypes.ENABLED}
+                value={EnabledTypes.ENABLED}
+                {...register("enabled")}
+              />
+              <label htmlFor={EnabledTypes.ENABLED}>사용</label>
+            </div>
+            <div>
+              <input
+                type="radio"
+                id={EnabledTypes.DISABLED}
+                value={EnabledTypes.DISABLED}
+                {...register("enabled")}
+              />
+              <label htmlFor={EnabledTypes.DISABLED}>정지</label>
+            </div>
           </div>
         </section>
         <button

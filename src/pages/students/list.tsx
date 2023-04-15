@@ -45,16 +45,21 @@ export default function StudentList() {
         />
       </section>
       <section className="mt-[30px]">
-        <div className="flex items-end justify-between">
-          <span className="text-[12px] text-[brown]">
-            ＃Tip: 비밀번호 분실이나 기간 만료로 로그인이 안될 경우 잠금 해제를
-            하면 됩니다.
-          </span>
-          <RefetchStudentListContext.Provider value={{ refetch }}>
+        <RefetchStudentListContext.Provider value={{ refetch }}>
+          <div className="flex items-end justify-between">
+            <span className="text-[12px] text-[brown]">
+              ＃Tip: 비밀번호 분실이나 기간 만료로 로그인이 안될 경우 잠금
+              해제를 하면 됩니다.
+            </span>
+
             <AdminControlPanel />
-          </RefetchStudentListContext.Provider>
-        </div>
-        <UserListTable isLoading={isLoading} students={students} page={page} />
+          </div>
+          <UserListTable
+            isLoading={isLoading}
+            students={students}
+            page={page}
+          />
+        </RefetchStudentListContext.Provider>
       </section>
       <section className="mt-[30px] mb-[60px] flex w-full items-center justify-center">
         {!isLoading && (
