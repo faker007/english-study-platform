@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { useState } from "react";
 import Filter from "../../components/Students/List/Filter";
 import Pages from "../../components/Students/List/Pages";
 import UserListTable from "../../components/Students/List/UserListTable";
@@ -6,18 +6,9 @@ import useStudentList from "../../hooks/useStudentList";
 import { MIN_PAGE } from "../../constants/Students";
 import AdminControlPanel from "../../components/Students/List/AdminControlPanel";
 
-export interface IRefetchStudentListContext {
-  refetch: () => Promise<void>;
-}
-
-export const RefetchStudentListContext =
-  createContext<IRefetchStudentListContext>({
-    refetch: async () => {},
-  });
-
 export default function StudentList() {
   const [page, setPage] = useState(MIN_PAGE);
-  const { isLoading, students, lastPage, refetch } = useStudentList();
+  const { isLoading, students, lastPage } = useStudentList();
 
   return (
     <div className="mx-auto w-full max-w-[980px]">
@@ -31,7 +22,7 @@ export default function StudentList() {
               createdAt: "",
               updatedAt: "",
               studentIDs: ["jXvXpUWKEwjtvdRKrJyf"],
-              teacherID: "",
+              teacherID: [],
             },
             {
               id: "2",
@@ -39,27 +30,21 @@ export default function StudentList() {
               createdAt: "",
               updatedAt: "",
               studentIDs: ["wcZ5341giCBlEWdvN8KL"],
-              teacherID: "",
+              teacherID: [],
             },
           ]}
         />
       </section>
       <section className="mt-[30px]">
-        <RefetchStudentListContext.Provider value={{ refetch }}>
-          <div className="flex items-end justify-between">
-            <span className="text-[12px] text-[brown]">
-              ＃Tip: 비밀번호 분실이나 기간 만료로 로그인이 안될 경우 잠금
-              해제를 하면 됩니다.
-            </span>
+        <div className="flex items-end justify-between">
+          <span className="text-[12px] text-[brown]">
+            ＃Tip: 비밀번호 분실이나 기간 만료로 로그인이 안될 경우 잠금 해제를
+            하면 됩니다.
+          </span>
 
-            <AdminControlPanel />
-          </div>
-          <UserListTable
-            isLoading={isLoading}
-            students={students}
-            page={page}
-          />
-        </RefetchStudentListContext.Provider>
+          <AdminControlPanel />
+        </div>
+        <UserListTable isLoading={isLoading} students={students} page={page} />
       </section>
       <section className="mt-[30px] mb-[60px] flex w-full items-center justify-center">
         {!isLoading && (

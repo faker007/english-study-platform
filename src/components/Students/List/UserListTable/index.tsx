@@ -62,15 +62,17 @@ export default function UserListTable({ isLoading, students, page }: IProps) {
             currentPageStudents.map((student, i) => (
               <TableItem
                 key={student.id}
-                email={student.email}
+                accountId={student.accountId}
                 docId={student.id}
                 index={i + 1}
                 lock="lock"
                 name={student.name || "김찬공"}
                 phoneNumber={student.phoneNumber || "0101234567"}
-                recentLogin={dayjs(student.updatedAt).format(
-                  "YYYY-MM-DD HH:mm"
-                )}
+                recentLogin={
+                  student.lastLoginTime
+                    ? dayjs(student.lastLoginTime).format("YYYY-MM-DD HH:mm")
+                    : ""
+                }
                 isEnabled={student.isEnabled}
               />
             ))

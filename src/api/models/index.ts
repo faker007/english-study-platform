@@ -12,17 +12,23 @@ interface ICommonModel {
 }
 
 export interface IUser extends ICommonModel {
-  uid: string;
   name: string;
-  email: string;
+  accountId: string;
+  password: string;
   phoneNumber: string;
-  role: TUserRole;
   groupIDs: string[];
   isEnabled: boolean;
+  lastLoginTime: string;
 }
 
 export interface IStudentGroup extends ICommonModel {
   studentIDs: string[];
-  teacherID: string;
+  teacherID: string[];
   name: string;
 }
+
+export interface ITeacher extends IUser {
+  isAdmin: boolean;
+}
+
+export interface IStudent extends IUser {}

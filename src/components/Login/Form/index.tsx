@@ -2,29 +2,38 @@ import { useForm, SubmitErrorHandler, SubmitHandler } from "react-hook-form";
 import {
   ID_INPUT_OPTIONS,
   LOCALSTORAGE_ID_REMEBER,
+  LOCALSTORAGE_USER_TOKEN,
   PASSWORD_INPUT_OPTIONS,
 } from "../../../constants/Login";
 import { ILoginForm } from "../../../types/Login";
-import { useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { fbAuth } from "../../../firebase";
-import { TUserRole } from "../../../api/models";
-import {
-  checkUserRole,
-  getUserFromFirestore,
-  updateLocalstorageIdRemember,
-  updateUserRecentLoginTime,
-} from "../../../utils/Login";
+import { NavigateFunction, useNavigate } from "react-router-dom";
+import { IStudent, ITeacher, IUser, TUserRole } from "../../../api/models";
 import { useCallback, useEffect, useState } from "react";
+import {
+  DocumentData,
+  QuerySnapshot,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import {
+  STUDENT_COLLECTION,
+  TEACHER_COLLECTION,
+} from "../../../api/collections";
+import { updateUserRecentLoginTime } from "../../../utils/Login";
+import dayjs from "dayjs";
+import { SetterOrUpdater, useSetRecoilState } from "recoil";
+import { userState } from "../../../stores/user";
 
 interface IProps {
   role: TUserRole;
 }
 
-export default function LoginForm({ role }: IProps) {
+function LoginForm({ role }: IProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { register, handleSubmit, reset, setValue } = useForm<ILoginForm>();
   const navigate = useNavigate();
+  const setUser = useSetRecoilState(userState);
 
   const onSubmit: SubmitHandler<ILoginForm> = async ({
     id,
@@ -34,27 +43,15 @@ export default function LoginForm({ role }: IProps) {
     setIsLoading(true);
 
     try {
-      const { user } = await signInWithEmailAndPassword(fbAuth, id, password);
+      const userSnapshot = await getUserSnapshot({
+        id,
+        password,
+        role,
+        idRemember,
+      });
 
-      if (user) {
-        const firestoreUserData = await getUserFromFirestore(user.uid);
-        const isRoleValidate = checkUserRole({ role, user: firestoreUserData });
-
-        if (firestoreUserData && isRoleValidate) {
-          updateLocalstorageIdRemember({
-            id: firestoreUserData?.email || "",
-            idRemember,
-            role,
-          });
-
-          await updateUserRecentLoginTime(firestoreUserData);
-
-          alert(`환영합니다 ${firestoreUserData?.email}님`);
-          navigate("/");
-        } else {
-          alert("로그인 방식에 문제가 있습니다.");
-        }
-      }
+      if (userSnapshot.empty) alert("해당하는 유저가 없습니다!");
+      else await handleLogin({ navigate, role, setUser, userSnapshot });
     } catch (error) {
       console.error(error);
       alert("오류가 발생했습니다.");
@@ -135,4 +132,42 @@ export default function LoginForm({ role }: IProps) {
       </form>
     </>
   );
+}
+
+export default LoginForm;
+
+async function getUserSnapshot({
+  id,
+  password,
+  role,
+}: ILoginForm & { role: TUserRole }) {
+  const userQuery = query(
+    role === "STUDENT" ? STUDENT_COLLECTION : TEACHER_COLLECTION,
+    where("accountId", "==", id),
+    where("password", "==", password)
+  );
+  return getDocs(userQuery);
+}
+
+async function handleLogin({
+  role,
+  userSnapshot,
+  navigate,
+  setUser,
+}: {
+  userSnapshot: QuerySnapshot<DocumentData>;
+  role: TUserRole;
+  navigate: NavigateFunction;
+  setUser: SetterOrUpdater<IStudent | ITeacher | null>;
+}) {
+  const data = userSnapshot.docs[0].data() as IUser;
+
+  localStorage.setItem(
+    LOCALSTORAGE_USER_TOKEN,
+    JSON.stringify({ role, data, createdAt: dayjs().toISOString() })
+  );
+  await updateUserRecentLoginTime(data);
+  alert(`환영합니다 ${data.accountId}님`);
+  navigate("/students/list");
+  setUser(data);
 }

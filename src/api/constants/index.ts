@@ -1,3 +1,5 @@
 export const COLLECTIONS = {
-  USER: "user",
+  student: "student",
+  teacher: "teacher",
+  studentGroup: "studentGroup",
 } as const;

@@ -6,80 +6,56 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { USER_COLLECTION } from "../../api/collections";
-import { User, createUserWithEmailAndPassword } from "firebase/auth";
-import { IUser, TUserRole } from "../../api/models";
-import { ILoginForm } from "../../types/Login";
-import { fbAuth, fbStore } from "../../firebase";
+import { IStudent, IUser, TUserRole } from "../../api/models";
+import { fbStore } from "../../firebase";
 import { LOCALSTORAGE_ID_REMEBER } from "../../constants/Login";
-
-export async function getUserFromFirestore(uid: string) {
-  const userDocQuery = query(USER_COLLECTION, where("uid", "==", uid));
-  const querySnapshot = await getDocs(userDocQuery);
-
-  if (!querySnapshot.empty) {
-    return querySnapshot.docs[0].data() as IUser;
-  }
-
-  return null;
-}
-
-export function checkUserRole({
-  role,
-  user,
-}: {
-  user: IUser | null;
-  role: TUserRole;
-}) {
-  return user?.role === role;
-}
-
-export async function syncUserToFirestore({
-  role,
-  user,
-  name,
-  phoneNumber,
-}: {
-  user: User;
-  role: TUserRole;
-  phoneNumber?: string;
-  name?: string;
-}) {
-  const userData: IUser = {
-    id: "",
-    role,
-    email: user.email || "",
-    name: user.displayName || name || "",
-    phoneNumber: user.phoneNumber || phoneNumber || "",
-    uid: user.uid,
-    groupIDs: [],
-    isEnabled: true,
-    updatedAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-  };
-  const newUserDoc = await addDoc(USER_COLLECTION, userData);
-  await updateDoc(newUserDoc, { id: newUserDoc.id });
-}
+import { STUDENT_COLLECTION, TEACHER_COLLECTION } from "../../api/collections";
+import dayjs from "dayjs";
+import { COLLECTIONS } from "../../api/constants";
 
 export async function createUser({
-  id,
+  accountId,
   password,
   role,
   name,
   phoneNumber,
-}: ILoginForm & {
+}: {
+  accountId: string;
+  password: string;
   role: TUserRole;
-  phoneNumber?: string;
-  name?: string;
-}) {
-  const { user } = await createUserWithEmailAndPassword(fbAuth, id, password);
+  phoneNumber: string;
+  name: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  const q = query(
+    role === "STUDENT" ? STUDENT_COLLECTION : TEACHER_COLLECTION,
+    where("accountId", "==", accountId),
+    where("password", "==", password)
+  );
+  const snapshot = await getDocs(q);
 
-  if (user) {
-    await syncUserToFirestore({ user, role, name, phoneNumber });
-    return true;
-  } else {
-    return false;
-  }
+  if (!snapshot.empty)
+    return { ok: false, error: "중복 되는 계정이 있습니다." };
+
+  const data: IUser = {
+    accountId,
+    password,
+    name,
+    phoneNumber,
+    id: "",
+    isEnabled: true,
+    groupIDs: [],
+    createdAt: dayjs().toISOString(),
+    updatedAt: dayjs().toISOString(),
+    lastLoginTime: "",
+  };
+
+  const doc = await addDoc(
+    role === "STUDENT" ? STUDENT_COLLECTION : TEACHER_COLLECTION,
+    data as IStudent
+  );
+  await updateDoc(doc, { id: doc.id });
+
+  return { ok: true };
 }
 
 export function updateLocalstorageIdRemember({
@@ -102,7 +78,7 @@ export function updateLocalstorageIdRemember({
 }
 
 export async function updateUserRecentLoginTime(user: IUser) {
-  return updateDoc(doc(fbStore, `user/${user.id}`), {
-    updatedAt: new Date().toISOString(),
+  return updateDoc(doc(fbStore, COLLECTIONS.student, user.id), {
+    lastLoginTime: new Date().toISOString(),
   });
 }

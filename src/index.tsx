@@ -5,11 +5,13 @@ import App from "./App";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import GNBWrapper from "./components/Common/GNB/Wrapper";
 import Login from "./pages/login";
-import Router from "./pages/router";
+import Router, { IToken } from "./pages/router";
 import StudentList from "./pages/students/list";
 import Students from "./pages/students";
 import StudentGroup from "./pages/students/group";
 import { RecoilRoot } from "recoil";
+import { userState } from "./stores/user";
+import { LOCALSTORAGE_USER_TOKEN } from "./constants/Login";
 
 const router = createBrowserRouter([
   {
@@ -42,7 +44,15 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <RecoilRoot>
+    <RecoilRoot
+      initializeState={({ set }) => {
+        const tokenString = localStorage.getItem(LOCALSTORAGE_USER_TOKEN);
+        if (tokenString) {
+          const { data } = JSON.parse(tokenString) as IToken;
+          set(userState, data);
+        }
+      }}
+    >
       <RouterProvider router={router} />
     </RecoilRoot>
   </React.StrictMode>

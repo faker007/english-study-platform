@@ -1,12 +1,13 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import { IModalContentArgs } from "../../../Common/Modal";
-import { useContext } from "react";
-import { RefetchStudentListContext } from "../../../../pages/students/list";
 import { doc, updateDoc } from "firebase/firestore";
-import { fbAuth, fbStore } from "../../../../firebase";
+import { fbStore } from "../../../../firebase";
 import { 초기_패스워드_값_생성 } from "../../../../utils/Students";
 import ModalFrame from "../../../Common/Modal/ModalFrame";
-import { signOut, updateCurrentUser } from "firebase/auth";
+import { COLLECTIONS } from "../../../../api/constants";
+import dayjs from "dayjs";
+import { useRecoilValue } from "recoil";
+import { refetchStudentListState } from "../../../../stores/students";
 
 const EnabledTypes = {
   ENABLED: "ENABLED",
@@ -16,7 +17,7 @@ const EnabledTypes = {
 type EnabledType = keyof typeof EnabledTypes;
 
 interface IForm {
-  email: string;
+  accountId: string;
   name: string;
   password: string;
   phoneNumber: string;
@@ -24,7 +25,7 @@ interface IForm {
 }
 
 interface IModalContentProps extends IModalContentArgs {
-  email: string;
+  accountId: string;
   name: string;
   phoneNumber: string;
   isEnabled: boolean;
@@ -36,7 +37,7 @@ const MIN_PASSWORD_LENGTH = 6;
 export default function ModalContent({
   toggleOpen,
   isOpen,
-  email,
+  accountId,
   name,
   phoneNumber,
   isEnabled,
@@ -44,13 +45,13 @@ export default function ModalContent({
 }: IModalContentProps) {
   const { register, handleSubmit, setValue } = useForm<IForm>({
     defaultValues: {
-      email,
+      accountId,
       name,
       phoneNumber,
       enabled: isEnabled ? EnabledTypes.ENABLED : EnabledTypes.DISABLED,
     },
   });
-  const { refetch } = useContext(RefetchStudentListContext);
+  const refetchStudentList = useRecoilValue(refetchStudentListState);
 
   const onSubmit: SubmitHandler<IForm> = async ({
     enabled,
@@ -59,18 +60,21 @@ export default function ModalContent({
     phoneNumber,
   }) => {
     try {
-      const targetDoc = doc(fbStore, "user", docId);
+      const targetDoc = doc(fbStore, COLLECTIONS.student, docId);
 
       await updateDoc(targetDoc, {
         name,
         phoneNumber,
         isEnabled: enabled === "ENABLED",
+        updatedAt: dayjs().toISOString(),
+        ...(password && { password }),
       });
 
-      // todo: update password if needed.
-
       alert("업데이트 완료.");
-      await refetch();
+
+      console.log(typeof refetchStudentList);
+
+      await refetchStudentList.refetch();
       toggleOpen();
     } catch (error) {
       console.error(error);
@@ -101,7 +105,7 @@ export default function ModalContent({
               readOnly
               placeholder="아이디는 이메일 형태, 영문/숫자 5자리 이상 입력"
               className="h-[34px] w-[260px] bg-[#fafafa] px-[5px] text-[14px] text-[#666] outline-none"
-              {...register("email")}
+              {...register("accountId")}
             />
 
             <button

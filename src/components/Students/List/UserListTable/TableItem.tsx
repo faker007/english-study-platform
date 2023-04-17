@@ -6,7 +6,7 @@ import ModalContent from "./ModalContent";
 interface IProps {
   index: number;
   name: string;
-  email: string;
+  accountId: string;
   phoneNumber: string;
   recentLogin: string;
   isEnabled: boolean;
@@ -15,7 +15,7 @@ interface IProps {
 }
 
 export default function TableItem({
-  email,
+  accountId,
   index,
   lock,
   name,
@@ -40,7 +40,7 @@ export default function TableItem({
           {name}
         </td>
         <td className="h-[50px] break-all border-b border-[#e5e5e5] text-center text-[14px] text-[#666]">
-          {email}
+          {accountId}
         </td>
         <td className="h-[50px] break-all border-b border-[#e5e5e5] text-center text-[14px] text-[#666]">
           {phoneNumber}
@@ -83,7 +83,7 @@ export default function TableItem({
         {(props) => (
           <ModalContent
             {...props}
-            email={email}
+            accountId={accountId}
             name={name}
             isEnabled={isEnabled}
             phoneNumber={phoneNumber}

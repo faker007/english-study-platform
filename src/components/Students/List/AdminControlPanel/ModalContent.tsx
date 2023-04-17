@@ -1,24 +1,24 @@
 import { RegisterOptions, SubmitHandler, useForm } from "react-hook-form";
 import { IModalContentArgs } from "../../../Common/Modal";
-import { useContext } from "react";
-import { RefetchStudentListContext } from "../../../../pages/students/list";
+import { useState } from "react";
 import { createUser } from "../../../../utils/Login";
-import { USER_COLLECTION } from "../../../../api/collections";
+import { STUDENT_COLLECTION } from "../../../../api/collections";
 import { getDocs, query, where } from "firebase/firestore";
 import ModalFrame from "../../../Common/Modal/ModalFrame";
 import { 초기_패스워드_값_생성 } from "../../../../utils/Students";
+import { useRecoilValue } from "recoil";
+import { refetchStudentListState } from "../../../../stores/students";
 
 interface IModalContentForm {
-  email: string;
+  accountId: string;
   name: string;
   password: string;
   phoneNumber: string;
 }
 
-const EmailOptions: RegisterOptions = {
+const AccountIdOptions: RegisterOptions = {
   required: true,
   minLength: 5,
-  pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
 };
 const NameOptions: RegisterOptions = {
   required: true,
@@ -45,44 +45,45 @@ export default function ModalContent({
     setValue,
     formState: { errors, dirtyFields },
   } = useForm<IModalContentForm>({ mode: "onChange" });
-  const { refetch } = useContext(RefetchStudentListContext);
+  const refetchStudentList = useRecoilValue(refetchStudentListState);
+  const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit: SubmitHandler<IModalContentForm> = async ({
-    email,
+    accountId,
     name,
     password,
     phoneNumber,
   }) => {
+    setIsLoading(true);
     try {
-      if (!(await 이메일_중복_확인()))
-        return alert("입력한 데이터에 문제가 있습니다.");
-
-      const isOk = await createUser({
-        id: email,
-        idRemember: false,
+      const { ok, error } = await createUser({
+        accountId,
         password,
         role: "STUDENT",
         phoneNumber,
         name,
       });
+      setIsLoading(false);
 
-      if (isOk) {
+      if (ok) {
         alert("유저 생성 완료.");
-        await refetch();
+        await refetchStudentList.refetch();
         toggleOpen();
+      } else {
+        alert(error);
       }
     } catch (error) {
       console.error(error);
     }
   };
 
-  async function 이메일_중복_확인() {
+  async function checkStudentDuplicate() {
     if (!isEmailValidate) return false;
 
     try {
       const q = query(
-        USER_COLLECTION,
-        where("email", "==", getValues("email"))
+        STUDENT_COLLECTION,
+        where("accountId", "==", getValues("accountId"))
       );
       const querySnapshot = await getDocs(q);
 
@@ -107,7 +108,7 @@ export default function ModalContent({
   // 버튼 클릭 안되는 조건
   // 1. 아직 유저 입력을 받지 않음
   // 2. 에러가 남아있음.
-  const isEmailValidate = dirtyFields.email && !errors.email;
+  const isEmailValidate = dirtyFields.accountId && !errors.accountId;
 
   return (
     <ModalFrame title="학생 정보-등록" isOpen={isOpen} toggleOpen={toggleOpen}>
@@ -115,25 +116,25 @@ export default function ModalContent({
         onSubmit={handleSubmit(onSubmit)}
         className="mx-auto flex w-fit flex-col"
       >
-        <section aria-label="email-input" className="flex items-end gap-[12px]">
+        <section aria-label="id-input" className="flex items-end gap-[12px]">
           <label
-            htmlFor="email"
+            htmlFor="id"
             className="h-[53px] w-[150px] border-b border-[#ddd] pl-[12px] pt-[12px] text-[15px] text-[#333]"
           >
             아이디
           </label>
           <div className="flex items-center gap-[10px] border-b border-[#777] pb-[5px]">
             <input
-              id="email"
-              type="email"
-              placeholder="아이디는 이메일 형태, 영문/숫자 5자리 이상 입력"
+              id="id"
+              type="text"
+              placeholder="아이디는 영문/숫자 5자리 이상 입력"
               className="h-[34px] w-[260px] bg-[#fafafa] px-[5px] text-[14px] text-[#666]"
-              {...register("email", EmailOptions)}
+              {...register("accountId", AccountIdOptions)}
             />
 
             <button
               type="button"
-              onClick={이메일_중복_확인}
+              onClick={checkStudentDuplicate}
               disabled={!isEmailValidate}
               className="h-[32px] w-[88px] border border-[#d9d9d9] bg-white text-[13px] text-[#777] disabled:cursor-not-allowed"
             >
@@ -218,7 +219,7 @@ export default function ModalContent({
           type="submit"
           className="mx-auto mt-[30px] h-[36px] w-[82px] border border-[#007abe] bg-[#007abe] text-[13px] text-white"
         >
-          저장
+          {isLoading ? "저장중..." : "저장"}
         </button>
       </form>
     </ModalFrame>

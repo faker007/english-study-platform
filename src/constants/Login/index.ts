@@ -19,3 +19,4 @@ export const PASSWORD_INPUT_OPTIONS: RegisterOptions = {
 };
 
 export const LOCALSTORAGE_ID_REMEBER = "ID_REMEMBER";
+export const LOCALSTORAGE_USER_TOKEN = "USER_TOKEN";

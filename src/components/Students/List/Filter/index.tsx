@@ -24,7 +24,10 @@ export default function Filter({ groupList }: IProps) {
       group: groupList.find((item) => item.name === group) ?? null,
     });
 
-  const handleResetForm = () => reset();
+  const handleResetForm = () => {
+    reset();
+    setFilterOption({ group: null, searchQuery: "", searchType: "ID" });
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>

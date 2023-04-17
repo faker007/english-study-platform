@@ -17,6 +17,6 @@ export interface IFilterForm extends IFilterDefaultProps {
   group: string;
 }
 
-export interface IRefetchStudentListState {
+export interface IRefetchState {
   refetch: () => Promise<void>;
 }

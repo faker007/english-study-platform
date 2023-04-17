@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { IUser, UserRole } from "../api/models";
-import { USER_COLLECTION } from "../api/collections";
-import { getDocs, query, where } from "firebase/firestore";
+import { useCallback, useEffect, useState } from "react";
+import { IUser } from "../api/models";
+import { STUDENT_COLLECTION } from "../api/collections";
+import { getDocs } from "firebase/firestore";
 import { PAGE_PER } from "../constants/Students";
-import { useRecoilValue } from "recoil";
-import { filterPropsState } from "../stores/students";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { filterPropsState, refetchStudentListState } from "../stores/students";
 import { FilterSearchType } from "../types/Students";
 
 export default function useStudentList() {
@@ -17,17 +17,17 @@ export default function useStudentList() {
 
   // recoil
   const filterOptions = useRecoilValue(filterPropsState);
+  const setRefetch = useSetRecoilState(refetchStudentListState);
 
-  async function fetchStudentList() {
+  const fetchStudentList = useCallback(async () => {
     setIsLoading(true);
     try {
-      const q = query(USER_COLLECTION, where("role", "==", UserRole.STUDENT));
-      const querySnapshot = await getDocs(q);
+      const snapshot = await getDocs(STUDENT_COLLECTION);
 
-      if (!querySnapshot.empty) {
+      if (!snapshot.empty) {
         const container: IUser[] = [];
 
-        querySnapshot.forEach(async (doc) => {
+        snapshot.forEach(async (doc) => {
           container.push(doc.data() as IUser);
         });
 
@@ -40,12 +40,16 @@ export default function useStudentList() {
       setError(error);
     }
     setIsLoading(false);
-  }
+  }, [setIsLoading, setStudents, setFilteredStudents, setLastPage, setError]);
 
   // effects
   useEffect(() => {
     fetchStudentList();
   }, []);
+
+  useEffect(() => {
+    if (fetchStudentList) setRefetch({ refetch: fetchStudentList });
+  }, [fetchStudentList, setRefetch]);
 
   useEffect(() => {
     if (students.length > 0 && filterOptions) {
@@ -89,7 +93,7 @@ function filterStudentByQuery({
   switch (searchType) {
     case "ID": {
       const nameSlugs = student.name.split("");
-      const emailSlugs = student.email.split("@")[0]?.split("") || [];
+      const emailSlugs = student.accountId.split("");
 
       const isNameValidate = querySlugs.every((querySlug) =>
         nameSlugs.includes(querySlug)
