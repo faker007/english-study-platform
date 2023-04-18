@@ -79,6 +79,8 @@ export default function useStudentList() {
       }
 
       setFilteredStudents(filteredStudents);
+    } else if (!filterOptions) {
+      setFilteredStudents(students);
     }
   }, [filterOptions, students]);
 

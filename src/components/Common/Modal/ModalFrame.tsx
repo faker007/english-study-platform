@@ -1,14 +1,17 @@
 import { PropsWithChildren } from "react";
 import { IModalContentArgs } from ".";
+import classNames from "classnames";
 
 interface IProps extends IModalContentArgs {
   title: string;
+  containerClassname?: string;
 }
 
 export default function ModalFrame({
   children,
   toggleOpen,
   title,
+  containerClassname,
 }: PropsWithChildren<IProps>) {
   return (
     <div className="h-full w-full overflow-auto rounded-[10px] bg-white p-[20px]">
@@ -21,7 +24,12 @@ export default function ModalFrame({
           X
         </button>
       </header>
-      <main className="w-full border-t-[3px] border-[#333] p-[30px]">
+      <main
+        className={classNames(
+          "w-full border-t-[3px] border-[#333] p-[30px]",
+          containerClassname
+        )}
+      >
         {children}
       </main>
     </div>

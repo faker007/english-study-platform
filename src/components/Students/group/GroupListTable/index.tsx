@@ -50,13 +50,7 @@ export default function GroupListTable({ isLoading, groups, page }: IProps) {
             <>
               <GroupForm />
               {currentPageGroups.map((group, i) => (
-                <TableItem
-                  key={group.id}
-                  index={i + 1}
-                  docId={group.id}
-                  name={group.name}
-                  studentIDs={group.studentIDs}
-                />
+                <TableItem key={group.id} index={i + 1} currentGroup={group} />
               ))}
             </>
           )}
