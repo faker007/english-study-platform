@@ -187,11 +187,28 @@ export default function ProblemBank() {
 }
 
 function ModalComponent({ toggleOpen }: IModalContentArgs) {
+  const [title, setTitle] = useState("");
   const [isShowQuill, setIsShowQuill] = useState(false);
+  const [quillContent, setQuillContent] = useState("");
   // const quillRef = useRef(null);
 
   // TODO: 지문_추가
   const 지문_추가 = async () => {};
+
+  const 지문_추가_저장 = async () => {
+    const jimunSetCF = collection(db, "jimuns");
+
+    try {
+      const result = await addDoc(jimunSetCF, {
+        title,
+        quillContent,
+      });
+
+      console.log(result);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   // TODO: 지문_없음_추가
   const 지문_없음_추가 = async () => {};
@@ -225,8 +242,43 @@ function ModalComponent({ toggleOpen }: IModalContentArgs) {
       </div>
 
       <Spacer width={10} />
-
       <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-white p-5">
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            height: 40,
+            borderBottomWidth: 3,
+            borderBottomColor: "black",
+          }}
+        >
+          <h1 style={{ fontSize: 24, fontWeight: 400 }}>지문 정보</h1>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            height: 50,
+            borderBottomWidth: 3,
+            borderBottomColor: "black",
+            paddingLeft: 10,
+            paddingRight: 10,
+          }}
+        >
+          <h3>지문제목</h3>
+
+          <input
+            type="text"
+            style={{
+              width: "85%",
+              height: 30,
+              backgroundColor: "#fafafa",
+              marginLeft: 30,
+            }}
+          />
+        </div>
+
         <ReactQuill style={{ width: "100%", height: "200" }} />
       </div>
     </div>
