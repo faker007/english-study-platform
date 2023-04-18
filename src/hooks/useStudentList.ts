@@ -122,6 +122,8 @@ function filterStudentByQuery({
 
       return querySlugs.every((querySlug) => phoneSlugs.includes(querySlug));
     }
+    case "NONE":
+      return true;
     default:
       return false;
   }

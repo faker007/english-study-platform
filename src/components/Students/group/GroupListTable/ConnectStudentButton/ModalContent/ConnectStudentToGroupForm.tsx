@@ -1,9 +1,15 @@
 import { SubmitHandler, useForm } from "react-hook-form";
-import useStudentList from "../../../../../../hooks/useStudentList";
 import { useSetRecoilState } from "recoil";
-import { filterPropsState } from "../../../../../../stores/students";
-import useStudentGroupList from "../../../../../../hooks/useStudentGroupList";
-import { IStudentGroup } from "../../../../../../api/models";
+import {
+  filterPropsState,
+  isRefetchStudentGroupListState,
+  isRefetchStudentListState,
+} from "../../../../../../stores/students";
+import { IStudent, IStudentGroup } from "../../../../../../api/models";
+import { useCallback, useEffect } from "react";
+import { doc, updateDoc } from "firebase/firestore";
+import { fbStore } from "../../../../../../firebase";
+import { COLLECTIONS } from "../../../../../../api/constants";
 
 interface IStudentSearchForm {
   groupID: string;
@@ -16,42 +22,112 @@ interface IStudentSelectForm {
 
 interface IProps {
   currentGroup: IStudentGroup;
+  students: IStudent[];
+  groups: IStudentGroup[];
+  isStudentListLoading: boolean;
+  isStudentGroupLoading: boolean;
 }
 
-function ConnectStudentToGroupForm({ currentGroup }: IProps) {
+function ConnectStudentToGroupForm({
+  currentGroup,
+  groups,
+  isStudentGroupLoading,
+  isStudentListLoading,
+  students,
+}: IProps) {
+  // react-hook-form
   const {
     register: searchRegister,
     handleSubmit: searchHandleSubmit,
-    reset: searchReset,
+    resetField: searchResetField,
+    watch: searchWatch,
   } = useForm<IStudentSearchForm>();
-  const {
-    register: selectRegister,
-    handleSubmit: selectHandleSubmit,
-    reset: selectReset,
-  } = useForm<IStudentSelectForm>();
+  const { register: selectRegister, handleSubmit: selectHandleSubmit } =
+    useForm<IStudentSelectForm>();
 
-  const { students, isLoading: isStudentListLoading } = useStudentList();
-  const { groups, isLoading: isStudentGroupLoading } = useStudentGroupList();
+  // recoil
   const setFilterOptions = useSetRecoilState(filterPropsState);
+  const setRefetchStudentGroupList = useSetRecoilState(
+    isRefetchStudentGroupListState
+  );
+  const setRefetchStudentList = useSetRecoilState(isRefetchStudentListState);
 
+  // derived variables
+  const groupIDChanges = searchWatch("groupID");
+  const outOfGroupStudents = students.filter(
+    (student) => !currentGroup.studentIDs.includes(student.id)
+  );
+  const isLoading = isStudentListLoading || isStudentGroupLoading;
+
+  // funcs
   const onSubmitSearchForm: SubmitHandler<IStudentSearchForm> = ({
     query,
     groupID,
   }) => {
-    console.log(groupID, query);
+    filterByGroupChange({ groupID, query });
   };
 
-  const onSubmitSelectForm: SubmitHandler<IStudentSelectForm> = ({
+  const onSubmitSelectForm: SubmitHandler<IStudentSelectForm> = async ({
     selectedStudentIDs,
   }) => {
-    console.log(selectedStudentIDs);
+    try {
+      // todo: 선택한 student Id를 이용해서 student쪽에는 groupIDs를 업데이트
+      //  타겟 그룹에선 studentIDs를 업데이트해주면 됨.
+      const groupDoc = doc(fbStore, COLLECTIONS.studentGroup, currentGroup.id);
+      const studentIDs = Array.from(
+        new Set([...currentGroup.studentIDs, ...selectedStudentIDs])
+      );
+
+      const studentUpdatePromises = selectedStudentIDs.map(
+        async (studentID) => {
+          const studentDoc = doc(fbStore, COLLECTIONS.student, studentID);
+          const studentObj = outOfGroupStudents.find(
+            (student) => student.id === studentID
+          );
+
+          if (studentObj) {
+            const groupIDs = Array.from(
+              new Set([...studentObj.groupIDs, currentGroup.id])
+            );
+            await updateDoc(studentDoc, { groupIDs });
+          }
+
+          return;
+        }
+      );
+
+      await updateDoc(groupDoc, { studentIDs });
+      await Promise.all(studentUpdatePromises);
+      alert("성공적으로 업데이트 되었습니다.");
+      setRefetchStudentGroupList(true);
+      setRefetchStudentList(true);
+    } catch (error) {
+      console.error(error);
+      alert("에러 발생");
+    }
   };
 
-  const isLoading = isStudentListLoading || isStudentGroupLoading;
-  const outOfGroupStudents = students.filter(
-    (student) => !currentGroup.studentIDs.includes(student.id)
+  const filterByGroupChange = useCallback(
+    ({ groupID, query }: IStudentSearchForm) => {
+      const group = groups.find((group) => group.id === groupID) ?? null;
+
+      setFilterOptions((prev) => {
+        if (prev) return { ...prev, group, searchQuery: query };
+        return { group, searchQuery: "", searchType: "ID" };
+      });
+    },
+    [setFilterOptions, groups]
   );
 
+  // effects
+  useEffect(() => {
+    if (typeof groupIDChanges !== "undefined") {
+      filterByGroupChange({ groupID: groupIDChanges, query: "" });
+      searchResetField("query");
+    }
+  }, [filterByGroupChange, groupIDChanges, searchResetField]);
+
+  // render
   if (isLoading) {
     return <div className="flex-1 text-center">Loading...</div>;
   }
@@ -66,7 +142,12 @@ function ConnectStudentToGroupForm({ currentGroup }: IProps) {
           className="w-[110px] shrink-0 border border-slate-400 py-1 text-xs"
           {...searchRegister("groupID")}
         >
-          <option value={"no-group"}>(그룹 미지정)</option>
+          <option value={""}>(그룹 미지정)</option>
+          {groups.map((group) => (
+            <option key={group.id} value={group.id}>
+              {group.name}
+            </option>
+          ))}
         </select>
         <input
           type="text"
@@ -90,7 +171,7 @@ function ConnectStudentToGroupForm({ currentGroup }: IProps) {
           {...selectRegister("selectedStudentIDs")}
         >
           {outOfGroupStudents.map((student) => (
-            <option value={student.id} className="text-xs">
+            <option key={student.id} value={student.id} className="text-xs">
               {student.name} / {student.accountId} / {student.phoneNumber}
             </option>
           ))}
