@@ -180,7 +180,7 @@ export default function ProblemBank() {
       </table>
 
       <Modal isOpen={isOpen} toggleOpen={문제_편집_모달_토글} fullscreen>
-        {ModalComponent}
+        {(props) => <ModalComponent {...props} />}
       </Modal>
     </div>
   );
