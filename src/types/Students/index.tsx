@@ -16,7 +16,3 @@ export interface IFilterProps extends IFilterDefaultProps {
 export interface IFilterForm extends IFilterDefaultProps {
   group: string;
 }
-
-export interface IRefetchState {
-  refetch: () => Promise<void>;
-}

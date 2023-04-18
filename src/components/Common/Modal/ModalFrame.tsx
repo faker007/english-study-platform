@@ -11,7 +11,7 @@ export default function ModalFrame({
   title,
 }: PropsWithChildren<IProps>) {
   return (
-    <div className="h-full w-full overflow-hidden rounded-[10px] bg-white p-[20px]">
+    <div className="h-full w-full overflow-auto rounded-[10px] bg-white p-[20px]">
       <header className="flex w-full items-center justify-between px-[20px] pt-[20px] pb-[20px]">
         <h3 className="text-2xl font-medium">{title}</h3>
         <button

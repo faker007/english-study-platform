@@ -1,7 +1,6 @@
-import { useState } from "react";
-import Modal from "../../../Common/Modal";
 import classNames from "classnames";
-import ModalContent from "./ModalContent";
+import GroupConnectButton from "./GroupConnectButton";
+import UpdateStudentButton from "./UpdateStudentButton";
 
 interface IProps {
   index: number;
@@ -12,24 +11,19 @@ interface IProps {
   isEnabled: boolean;
   lock: string;
   docId: string;
+  groupIDs: string[];
 }
 
 export default function TableItem({
   accountId,
   index,
-  lock,
   name,
   phoneNumber,
   recentLogin,
   isEnabled,
   docId,
+  groupIDs,
 }: IProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleOpen = () => {
-    setIsOpen((prev) => !prev);
-  };
-
   return (
     <>
       <tr>
@@ -62,15 +56,21 @@ export default function TableItem({
           <button className="rounded-[6px] border border-[#d9d9d9] bg-white px-3 py-1 text-[13px] text-[#777] hover:bg-[#d9d9d9]">
             대시보드
           </button>
-          <button
-            onClick={toggleOpen}
-            className="rounded-[6px] border border-[#d9d9d9] bg-white px-3 py-1 text-[13px] text-[#777] hover:bg-[#d9d9d9]"
-          >
-            수정
-          </button>
-          <button className="rounded-[6px] border border-[#d9d9d9] bg-white px-3 py-1 text-[13px] text-[#777] hover:bg-[#d9d9d9]">
-            그룹연결
-          </button>
+          <UpdateStudentButton
+            accountId={accountId}
+            docId={docId}
+            isEnabled={isEnabled}
+            name={name}
+            phoneNumber={phoneNumber}
+          />
+          <GroupConnectButton
+            accountId={accountId}
+            docId={docId}
+            isEnabled={isEnabled}
+            name={name}
+            phoneNumber={phoneNumber}
+            groupIDs={groupIDs}
+          />
           <button className="rounded-[6px] border border-[#d9d9d9] bg-white px-3 py-1 text-[13px] text-[#777] hover:bg-[#d9d9d9]">
             잠금해제
           </button>
@@ -79,18 +79,6 @@ export default function TableItem({
           </button>
         </td>
       </tr>
-      <Modal isOpen={isOpen} toggleOpen={toggleOpen} width={750} height={510}>
-        {(props) => (
-          <ModalContent
-            {...props}
-            accountId={accountId}
-            name={name}
-            isEnabled={isEnabled}
-            phoneNumber={phoneNumber}
-            docId={docId}
-          />
-        )}
-      </Modal>
     </>
   );
 }

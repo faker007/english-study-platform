@@ -1,14 +1,9 @@
 import { atom } from "recoil";
-import { IFilterProps, IRefetchState } from "../types/Students";
+import { IFilterProps } from "../types/Students";
 
 export const filterPropsState = atom<IFilterProps | null>({
   key: "filterPropsState",
   default: null,
-});
-
-export const refetchStudentListState = atom<IRefetchState>({
-  key: "refetchStudentListState",
-  default: { refetch: async () => {} },
 });
 
 export const studentGroupSearchQueryState = atom<string>({
@@ -16,7 +11,12 @@ export const studentGroupSearchQueryState = atom<string>({
   key: "studentGroupSearchQueryState",
 });
 
-export const refetchStudentGroupListState = atom<IRefetchState>({
-  key: "refetchStudentListState",
-  default: { refetch: async () => {} },
+export const isRefetchStudentListState = atom<boolean>({
+  default: false,
+  key: "isRefetchStudentListState",
+});
+
+export const isRefetchStudentGroupListState = atom<boolean>({
+  default: false,
+  key: "isRefetchStudentGroupListState",
 });

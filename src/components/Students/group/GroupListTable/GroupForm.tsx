@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
-import { useRecoilValue } from "recoil";
-import { refetchStudentGroupListState } from "../../../../stores/students";
+import { useSetRecoilState } from "recoil";
+import { isRefetchStudentGroupListState } from "../../../../stores/students";
 import { STUDENT_GROUP_COLLECTION } from "../../../../api/collections";
 import { addDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { IStudentGroup } from "../../../../api/models";
@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 
 function GroupForm() {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const studentGroupListRefetch = useRecoilValue(refetchStudentGroupListState);
+  const setIsRefetch = useSetRecoilState(isRefetchStudentGroupListState);
   const [isLoading, setIsLoading] = useState(false);
 
   const resetField = () => {
@@ -37,7 +37,7 @@ function GroupForm() {
           alert("중복 되는 그룹명 입니다.");
         } else {
           await createStudentGroup(groupName);
-          studentGroupListRefetch.refetch();
+          setIsRefetch(true);
           alert("그룹 생성 완료!");
         }
       } catch (error) {

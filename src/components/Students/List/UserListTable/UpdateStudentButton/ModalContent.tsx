@@ -1,13 +1,13 @@
 import { SubmitHandler, useForm } from "react-hook-form";
-import { IModalContentArgs } from "../../../Common/Modal";
+import { IModalContentArgs } from "../../../../Common/Modal";
 import { doc, updateDoc } from "firebase/firestore";
-import { fbStore } from "../../../../firebase";
-import { 초기_패스워드_값_생성 } from "../../../../utils/Students";
-import ModalFrame from "../../../Common/Modal/ModalFrame";
-import { COLLECTIONS } from "../../../../api/constants";
+import { fbStore } from "../../../../../firebase";
+import { 초기_패스워드_값_생성 } from "../../../../../utils/Students";
+import ModalFrame from "../../../../Common/Modal/ModalFrame";
+import { COLLECTIONS } from "../../../../../api/constants";
 import dayjs from "dayjs";
-import { useRecoilValue } from "recoil";
-import { refetchStudentListState } from "../../../../stores/students";
+import { useSetRecoilState } from "recoil";
+import { isRefetchStudentListState } from "../../../../../stores/students";
 
 const EnabledTypes = {
   ENABLED: "ENABLED",
@@ -51,7 +51,7 @@ export default function ModalContent({
       enabled: isEnabled ? EnabledTypes.ENABLED : EnabledTypes.DISABLED,
     },
   });
-  const refetchStudentList = useRecoilValue(refetchStudentListState);
+  const setIsRefetch = useSetRecoilState(isRefetchStudentListState);
 
   const onSubmit: SubmitHandler<IForm> = async ({
     enabled,
@@ -72,9 +72,7 @@ export default function ModalContent({
 
       alert("업데이트 완료.");
 
-      console.log(typeof refetchStudentList);
-
-      await refetchStudentList.refetch();
+      setIsRefetch(true);
       toggleOpen();
     } catch (error) {
       console.error(error);
@@ -91,17 +89,17 @@ export default function ModalContent({
         onSubmit={handleSubmit(onSubmit)}
         className="mx-auto flex w-fit flex-col"
       >
-        <section aria-label="email-input" className="flex items-end gap-[12px]">
+        <section aria-label="id-input" className="flex items-end gap-[12px]">
           <label
-            htmlFor="email"
+            htmlFor="id"
             className="h-[53px] w-[150px] border-b border-[#ddd] pl-[12px] pt-[12px] text-[15px] text-[#333]"
           >
             아이디
           </label>
           <div className="flex items-center gap-[10px] border-b border-[#777] pb-[5px]">
             <input
-              id="email"
-              type="email"
+              id="id"
+              type="text"
               readOnly
               placeholder="아이디는 이메일 형태, 영문/숫자 5자리 이상 입력"
               className="h-[34px] w-[260px] bg-[#fafafa] px-[5px] text-[14px] text-[#666] outline-none"

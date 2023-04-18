@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { useRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 import { userState } from "../stores/user";
 import { LOCALSTORAGE_USER_TOKEN } from "../constants/Login";
 import { IUser, TUserRole } from "../api/models";
@@ -16,7 +16,7 @@ export interface IToken {
 
 function Router() {
   const navigate = useNavigate();
-  const [user, setUser] = useRecoilState(userState);
+  const setUser = useSetRecoilState(userState);
 
   const handleUser = useCallback(async () => {
     const tokenString = localStorage.getItem(LOCALSTORAGE_USER_TOKEN);
@@ -34,8 +34,6 @@ function Router() {
       const isExpired = isUserInfoModified || isTokenDurationExpired;
 
       if (isExpired) {
-        console.log(isUserInfoModified, isTokenDurationExpired);
-
         localStorage.removeItem(LOCALSTORAGE_USER_TOKEN);
         alert("로그인 정보가 만료 되었습니다. 다시 로그인 해주세요.");
         setUser(null);

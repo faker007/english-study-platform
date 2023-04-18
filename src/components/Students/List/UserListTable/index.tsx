@@ -66,8 +66,9 @@ export default function UserListTable({ isLoading, students, page }: IProps) {
                 docId={student.id}
                 index={i + 1}
                 lock="lock"
-                name={student.name || "김찬공"}
-                phoneNumber={student.phoneNumber || "0101234567"}
+                name={student.name}
+                phoneNumber={student.phoneNumber}
+                groupIDs={student.groupIDs}
                 recentLogin={
                   student.lastLoginTime
                     ? dayjs(student.lastLoginTime).format("YYYY-MM-DD HH:mm")

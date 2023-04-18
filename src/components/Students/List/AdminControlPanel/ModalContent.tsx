@@ -6,8 +6,8 @@ import { STUDENT_COLLECTION } from "../../../../api/collections";
 import { getDocs, query, where } from "firebase/firestore";
 import ModalFrame from "../../../Common/Modal/ModalFrame";
 import { 초기_패스워드_값_생성 } from "../../../../utils/Students";
-import { useRecoilValue } from "recoil";
-import { refetchStudentListState } from "../../../../stores/students";
+import { useSetRecoilState } from "recoil";
+import { isRefetchStudentListState } from "../../../../stores/students";
 
 interface IModalContentForm {
   accountId: string;
@@ -45,7 +45,7 @@ export default function ModalContent({
     setValue,
     formState: { errors, dirtyFields },
   } = useForm<IModalContentForm>({ mode: "onChange" });
-  const refetchStudentList = useRecoilValue(refetchStudentListState);
+  const setIsRefetch = useSetRecoilState(isRefetchStudentListState);
   const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit: SubmitHandler<IModalContentForm> = async ({
@@ -67,7 +67,7 @@ export default function ModalContent({
 
       if (ok) {
         alert("유저 생성 완료.");
-        await refetchStudentList.refetch();
+        setIsRefetch(true);
         toggleOpen();
       } else {
         alert(error);

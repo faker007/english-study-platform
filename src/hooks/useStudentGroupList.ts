@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { IStudentGroup } from "../api/models";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import {
-  refetchStudentGroupListState,
+  isRefetchStudentGroupListState,
   studentGroupSearchQueryState,
 } from "../stores/students";
 import { STUDENT_GROUP_COLLECTION } from "../api/collections";
@@ -19,7 +19,9 @@ export default function useStudentGroupList() {
 
   // recoil
   const searchQuery = useRecoilValue(studentGroupSearchQueryState);
-  const setRefetch = useSetRecoilState(refetchStudentGroupListState);
+  const [isRefetch, setIsRefetch] = useRecoilState(
+    isRefetchStudentGroupListState
+  );
 
   const fetchStudentGroups = useCallback(async () => {
     setIsLoading(true);
@@ -33,13 +35,14 @@ export default function useStudentGroupList() {
       setGroups(container);
       setFilteredGroups(container);
       setLastPage(Math.ceil(container.length / PAGE_PER));
+      setIsRefetch(false);
     } catch (error) {
       console.error(error);
       setError(error);
     }
 
     setIsLoading(false);
-  }, [setIsLoading, setGroups, setFilteredGroups, setLastPage]);
+  }, [setIsLoading, setGroups, setFilteredGroups, setLastPage, setIsRefetch]);
 
   useEffect(() => {
     const querySlugs = searchQuery.split("");
@@ -53,8 +56,17 @@ export default function useStudentGroupList() {
 
   useEffect(() => {
     fetchStudentGroups();
-    setRefetch({ refetch: fetchStudentGroups });
-  }, [fetchStudentGroups, setRefetch]);
+  }, [fetchStudentGroups]);
 
-  return { isLoading, groups: filteredGroups, error, lastPage };
+  useEffect(() => {
+    if (isRefetch) fetchStudentGroups();
+  }, [isRefetch, fetchStudentGroups]);
+
+  return {
+    isLoading,
+    groups: filteredGroups,
+    error,
+    lastPage,
+    refetch: fetchStudentGroups,
+  };
 }

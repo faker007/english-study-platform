@@ -3,8 +3,11 @@ import { IUser } from "../api/models";
 import { STUDENT_COLLECTION } from "../api/collections";
 import { getDocs } from "firebase/firestore";
 import { PAGE_PER } from "../constants/Students";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { filterPropsState, refetchStudentListState } from "../stores/students";
+import { useRecoilState, useRecoilValue } from "recoil";
+import {
+  filterPropsState,
+  isRefetchStudentListState,
+} from "../stores/students";
 import { FilterSearchType } from "../types/Students";
 
 export default function useStudentList() {
@@ -17,7 +20,7 @@ export default function useStudentList() {
 
   // recoil
   const filterOptions = useRecoilValue(filterPropsState);
-  const setRefetch = useSetRecoilState(refetchStudentListState);
+  const [isRefetch, setIsRefetch] = useRecoilState(isRefetchStudentListState);
 
   const fetchStudentList = useCallback(async () => {
     setIsLoading(true);
@@ -34,22 +37,30 @@ export default function useStudentList() {
         setStudents(container);
         setFilteredStudents(container);
         setLastPage(Math.ceil(container.length / PAGE_PER));
+        setIsRefetch(false);
       }
     } catch (error) {
       console.error(error);
       setError(error);
     }
     setIsLoading(false);
-  }, [setIsLoading, setStudents, setFilteredStudents, setLastPage, setError]);
+  }, [
+    setIsLoading,
+    setStudents,
+    setFilteredStudents,
+    setLastPage,
+    setError,
+    setIsRefetch,
+  ]);
 
   // effects
   useEffect(() => {
     fetchStudentList();
-  }, []);
+  }, [fetchStudentList]);
 
   useEffect(() => {
-    if (fetchStudentList) setRefetch({ refetch: fetchStudentList });
-  }, [fetchStudentList, setRefetch]);
+    if (isRefetch) fetchStudentList();
+  }, [isRefetch, fetchStudentList]);
 
   useEffect(() => {
     if (students.length > 0 && filterOptions) {
