@@ -28,15 +28,18 @@ export default function Modal({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
     }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isOpen]);
 
   if (!isOpen) {
     return <></>;
   }
+
+  console.log(children({ isOpen, toggleOpen }));
 
   return (
     <div

@@ -13,11 +13,12 @@ import "react-quill/dist/quill.snow.css";
 export default function ProblemBank() {
   const [problemSetName, setProblemSetName] = useState("");
   const [problemSets, setProblemSets] = useState([]);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   function 문제_편집_모달_토글() {
     setIsOpen((prev) => !prev);
   }
+
   // TODO: Extract this function as a hook
   const 신규_등록 = async () => {
     if (!problemSetName) {
@@ -133,11 +134,15 @@ export default function ProblemBank() {
             </td>
           </tr>
           {problemSets.map((problemSet: any) => {
+            console.log(problemSet);
             return (
               <tr>
                 <td>-</td>
                 <td>
-                  <input
+                  <p style={{ textAlign: "center" }}>
+                    {problemSet.problemSetName}
+                  </p>
+                  {/* <input
                     type="text"
                     style={{ border: "1px solid #555", textAlign: "center" }}
                     placeholder="문제 세트명 입력"
@@ -146,7 +151,7 @@ export default function ProblemBank() {
                       setProblemSetName(e.target.value);
                       console.log(e.target.value);
                     }}
-                  />
+                  /> */}
                 </td>
                 <td>{problemSet?.length ?? "-"}</td>
                 <td>
@@ -175,14 +180,15 @@ export default function ProblemBank() {
       </table>
 
       <Modal isOpen={isOpen} toggleOpen={문제_편집_모달_토글} fullscreen>
-        {문제_편집_컴포넌트}
+        {ModalComponent}
       </Modal>
     </div>
   );
 }
 
-function 문제_편집_컴포넌트({ toggleOpen }: IModalContentArgs) {
-  const quillRef = useRef(null);
+function ModalComponent({ toggleOpen }: IModalContentArgs) {
+  const [isShowQuill, setIsShowQuill] = useState(false);
+  // const quillRef = useRef(null);
 
   // TODO: 지문_추가
   const 지문_추가 = async () => {};
@@ -221,7 +227,7 @@ function 문제_편집_컴포넌트({ toggleOpen }: IModalContentArgs) {
       <Spacer width={10} />
 
       <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-white p-5">
-        <ReactQuill ref={quillRef} style={{ width: "100%", height: "200" }} />
+        <ReactQuill style={{ width: "100%", height: "200" }} />
       </div>
     </div>
   );
