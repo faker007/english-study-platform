@@ -1,24 +1,25 @@
 import { useCallback, useEffect, useState } from "react";
 import { IStudentGroup } from "../api/models";
-import { useRecoilState, useRecoilValue } from "recoil";
-import {
-  isRefetchStudentGroupListState,
-  studentGroupSearchQueryState,
-} from "../stores/students";
+import { useRecoilState } from "recoil";
+import { isRefetchStudentGroupListState } from "../stores/students";
 import { STUDENT_GROUP_COLLECTION } from "../api/collections";
 import { getDocs, query } from "firebase/firestore";
-import { PAGE_PER } from "../constants/Students";
+import { MIN_PAGE, PAGE_PER } from "../constants/Students";
+import { IFilterProps } from "../types/Students";
 
-export default function useStudentGroupList() {
+interface IProps {
+  filterOptions?: Pick<IFilterProps, "searchQuery">;
+}
+
+export default function useStudentGroupList({ filterOptions }: IProps) {
   // states
   const [isLoading, setIsLoading] = useState(false);
   const [groups, setGroups] = useState<IStudentGroup[]>([]);
   const [filteredGroups, setFilteredGroups] = useState<IStudentGroup[]>([]);
   const [error, setError] = useState<unknown>();
-  const [lastPage, setLastPage] = useState(1);
+  const [lastPage, setLastPage] = useState(MIN_PAGE);
 
   // recoil
-  const searchQuery = useRecoilValue(studentGroupSearchQueryState);
   const [isRefetch, setIsRefetch] = useRecoilState(
     isRefetchStudentGroupListState
   );
@@ -45,14 +46,17 @@ export default function useStudentGroupList() {
   }, [setIsLoading, setGroups, setFilteredGroups, setLastPage, setIsRefetch]);
 
   useEffect(() => {
-    const querySlugs = searchQuery.split("");
+    if (filterOptions) {
+      const querySlugs = filterOptions.searchQuery.split("");
 
-    const filteredGroups = groups.filter((group) => {
-      return querySlugs.every((querySlug) => group.name.includes(querySlug));
-    });
+      const filteredGroups = groups.filter((group) => {
+        return querySlugs.every((querySlug) => group.name.includes(querySlug));
+      });
 
-    setFilteredGroups(filteredGroups);
-  }, [searchQuery, groups]);
+      setFilteredGroups(filteredGroups);
+      setLastPage(Math.ceil(filteredGroups.length / PAGE_PER));
+    }
+  }, [filterOptions, groups]);
 
   useEffect(() => {
     fetchStudentGroups();

@@ -1,6 +1,8 @@
 import classNames from "classnames";
 import GroupConnectButton from "./GroupConnectButton";
 import UpdateStudentButton from "./UpdateStudentButton";
+import UnLockUserButton from "./UnLockUserButton";
+import DeleteStudentButton from "./DeleteStudentButton";
 
 interface IProps {
   index: number;
@@ -71,12 +73,8 @@ export default function TableItem({
             phoneNumber={phoneNumber}
             groupIDs={groupIDs}
           />
-          <button className="rounded-[6px] border border-[#d9d9d9] bg-white px-3 py-1 text-[13px] text-[#777] hover:bg-[#d9d9d9]">
-            잠금해제
-          </button>
-          <button className="rounded-[6px] border border-[#d9d9d9] bg-white px-3 py-1 text-[13px] text-[#777] hover:bg-[#d9d9d9]">
-            삭제
-          </button>
+          <UnLockUserButton studentId={docId} accountId={accountId} />
+          <DeleteStudentButton studentId={docId} groupIDs={groupIDs} />
         </td>
       </tr>
     </>

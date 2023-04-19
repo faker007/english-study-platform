@@ -76,8 +76,10 @@ export default function useStudentList(filterOptions: IFilterProps) {
       }
 
       setFilteredStudents(filteredStudents);
+      setLastPage(Math.ceil(filteredStudents.length / PAGE_PER));
     } else if (!filterOptions) {
       setFilteredStudents(students);
+      setLastPage(Math.ceil(students.length / PAGE_PER));
     }
   }, [filterOptions, students]);
 

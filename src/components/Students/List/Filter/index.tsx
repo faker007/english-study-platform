@@ -1,32 +1,55 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import { IFilterForm, IFilterProps } from "../../../../types/Students";
-import { FILTER_SEARCH_TYPES } from "../../../../constants/Students";
+import { FILTER_SEARCH_TYPES, MIN_PAGE } from "../../../../constants/Students";
 import { IStudentGroup } from "../../../../api/models";
+import { useEffect } from "react";
 
 interface IProps {
   groupList: IStudentGroup[];
   setFilterOptions: React.Dispatch<React.SetStateAction<IFilterProps>>;
+  setPage: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export default function Filter({ groupList, setFilterOptions }: IProps) {
-  const { register, handleSubmit, reset } = useForm<IFilterForm>();
-  // const setFilterOption = useSetRecoilState(filterPropsState);
+export default function Filter({
+  groupList,
+  setFilterOptions,
+  setPage,
+}: IProps) {
+  const { register, handleSubmit, reset, watch } = useForm<IFilterForm>();
+
+  const groupWatchValue = watch("group");
 
   const onSubmit: SubmitHandler<IFilterForm> = ({
     group,
     searchQuery,
     searchType,
-  }) =>
+  }) => {
     setFilterOptions({
       searchQuery,
       searchType,
-      group: groupList.find((item) => item.name === group) ?? null,
+      group: groupList.find((item) => item.id === group) ?? null,
     });
+    setPage(MIN_PAGE);
+  };
 
   const handleResetForm = () => {
     reset();
     setFilterOptions({ group: null, searchQuery: "", searchType: "ID" });
   };
+
+  useEffect(() => {
+    const handleChangeGroup = () => {
+      if (typeof groupWatchValue !== "undefined") {
+        setFilterOptions((prev) => ({
+          ...prev,
+          group: groupList.find((item) => item.id === groupWatchValue) ?? null,
+        }));
+        setPage(MIN_PAGE);
+      }
+    };
+
+    handleChangeGroup();
+  }, [setFilterOptions, setPage, groupList, groupWatchValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -36,7 +59,7 @@ export default function Filter({ groupList, setFilterOptions }: IProps) {
       >
         <option value={""}>그룹 선택</option>
         {groupList.map((group) => (
-          <option key={group.id} value={group.name}>
+          <option key={group.id} value={group.id}>
             {group.name}
           </option>
         ))}

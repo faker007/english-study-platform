@@ -35,7 +35,7 @@ export default function ModalContent({
   name,
 }: IProps) {
   const { register, handleSubmit } = useForm<IForm>();
-  const { isLoading, groups } = useStudentGroupList();
+  const { isLoading, groups } = useStudentGroupList({});
   const setIsRefetchStudentList = useSetRecoilState(isRefetchStudentListState);
   const setIsRefetchStudentGroupList = useSetRecoilState(
     isRefetchStudentGroupListState

@@ -6,6 +6,7 @@ import useStudentList from "../../hooks/useStudentList";
 import { MIN_PAGE } from "../../constants/Students";
 import AdminControlPanel from "../../components/Students/List/AdminControlPanel";
 import { IFilterProps } from "../../types/Students";
+import useStudentGroupList from "../../hooks/useStudentGroupList";
 
 export default function StudentList() {
   const [page, setPage] = useState(MIN_PAGE);
@@ -14,32 +15,25 @@ export default function StudentList() {
     searchQuery: "",
     searchType: "ID",
   });
-  const { isLoading, students, lastPage } = useStudentList(filterOptions);
+  const {
+    isLoading: isLoadingStudentList,
+    students,
+    lastPage,
+  } = useStudentList(filterOptions);
+  const { isLoading: isLoadingStudentGroupList, groups } = useStudentGroupList(
+    {}
+  );
+
+  const isLoading = isLoadingStudentGroupList || isLoadingStudentList;
 
   return (
     <div className="mx-auto w-full max-w-[980px]">
       <h2 className="pt-[20px] text-[26px] font-bold text-[#111]">학생 정보</h2>
       <section className="mt-[20px] flex w-full items-center justify-center border border-[#e0e0e0] bg-[#f7f7f7] p-[20px]">
         <Filter
+          setPage={setPage}
           setFilterOptions={setFilterOptions}
-          groupList={[
-            {
-              id: "1",
-              name: "1",
-              createdAt: "",
-              updatedAt: "",
-              studentIDs: ["jXvXpUWKEwjtvdRKrJyf"],
-              teacherID: [],
-            },
-            {
-              id: "2",
-              name: "2",
-              createdAt: "",
-              updatedAt: "",
-              studentIDs: ["wcZ5341giCBlEWdvN8KL"],
-              teacherID: [],
-            },
-          ]}
+          groupList={groups}
         />
       </section>
       <section className="mt-[30px]">

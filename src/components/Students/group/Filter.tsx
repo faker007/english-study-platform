@@ -1,21 +1,25 @@
 import { SubmitHandler, useForm } from "react-hook-form";
-import { studentGroupSearchQueryState } from "../../../stores/students";
-import { useSetRecoilState } from "recoil";
+import { IFilterProps } from "../../../types/Students";
 
 interface IForm {
   searchQuery: string;
 }
 
-export default function Filter() {
+interface IProps {
+  setFilterOptions: React.Dispatch<
+    React.SetStateAction<Pick<IFilterProps, "searchQuery">>
+  >;
+}
+
+export default function Filter({ setFilterOptions }: IProps) {
   const { register, handleSubmit, reset } = useForm<IForm>();
-  const setSearchQuery = useSetRecoilState(studentGroupSearchQueryState);
 
   const onSubmit: SubmitHandler<IForm> = ({ searchQuery }) =>
-    setSearchQuery(searchQuery);
+    setFilterOptions({ searchQuery });
 
   const handleResetForm = () => {
     reset();
-    setSearchQuery("");
+    setFilterOptions({ searchQuery: "" });
   };
 
   return (

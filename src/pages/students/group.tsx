@@ -3,16 +3,22 @@ import Pages from "../../components/Students/List/Pages";
 import Filter from "../../components/Students/group/Filter";
 import GroupListTable from "../../components/Students/group/GroupListTable";
 import useStudentGroupList from "../../hooks/useStudentGroupList";
+import { IFilterProps } from "../../types/Students";
 
 export default function StudentGroup() {
   const [page, setPage] = useState(1);
-  const { groups, isLoading, lastPage } = useStudentGroupList();
+  const [filterOptions, setFilterOptions] = useState<
+    Pick<IFilterProps, "searchQuery">
+  >({ searchQuery: "" });
+  const { groups, isLoading, lastPage } = useStudentGroupList({
+    filterOptions,
+  });
 
   return (
     <div className="mx-auto w-full max-w-[980px]">
       <h2 className="pt-[20px] text-[26px] font-bold text-[#111]">학생 그룹</h2>
       <section className="mt-[20px] flex w-full items-center justify-center border border-[#e0e0e0] bg-[#f7f7f7] p-[20px]">
-        <Filter />
+        <Filter setFilterOptions={setFilterOptions} />
       </section>
       <section className="mt-[30px]">
         <div className="flex items-end justify-between">

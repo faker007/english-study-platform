@@ -47,7 +47,7 @@ function ConnectStudentToGroupForm({ currentGroup }: IProps) {
   // hooks
   const { students, isLoading: isStudentListLoading } =
     useStudentList(filterOptions);
-  const { groups, isLoading: isStudentGroupLoading } = useStudentGroupList();
+  const { groups, isLoading: isStudentGroupLoading } = useStudentGroupList({});
 
   // recoil
   // const setFilterOptions = useSetRecoilState(filterPropsState);
