@@ -3,6 +3,7 @@ import GroupConnectButton from "./GroupConnectButton";
 import UpdateStudentButton from "./UpdateStudentButton";
 import UnLockUserButton from "./UnLockUserButton";
 import DeleteStudentButton from "./DeleteStudentButton";
+import DashBoardButton from "./DashBoardButton";
 
 interface IProps {
   index: number;
@@ -55,9 +56,11 @@ export default function TableItem({
           {isEnabled ? "사용" : "정지"}
         </td>
         <td className="h-[50px] space-x-[5px] break-all border-b border-[#e5e5e5] text-center text-[14px] text-[#666]">
-          <button className="rounded-[6px] border border-[#d9d9d9] bg-white px-3 py-1 text-[13px] text-[#777] hover:bg-[#d9d9d9]">
-            대시보드
-          </button>
+          <DashBoardButton
+            accountId={accountId}
+            name={name}
+            phoneNumber={phoneNumber}
+          />
           <UpdateStudentButton
             accountId={accountId}
             docId={docId}
