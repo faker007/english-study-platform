@@ -1,15 +1,17 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useSetRecoilState } from "recoil";
 import {
-  filterPropsState,
   isRefetchStudentGroupListState,
   isRefetchStudentListState,
 } from "../../../../../../stores/students";
-import { IStudent, IStudentGroup } from "../../../../../../api/models";
-import { useCallback, useEffect } from "react";
+import { IStudentGroup } from "../../../../../../api/models";
+import { useCallback, useEffect, useState } from "react";
 import { doc, updateDoc } from "firebase/firestore";
 import { fbStore } from "../../../../../../firebase";
 import { COLLECTIONS } from "../../../../../../api/constants";
+import useStudentList from "../../../../../../hooks/useStudentList";
+import useStudentGroupList from "../../../../../../hooks/useStudentGroupList";
+import { IFilterProps } from "../../../../../../types/Students";
 
 interface IStudentSearchForm {
   groupID: string;
@@ -22,19 +24,9 @@ interface IStudentSelectForm {
 
 interface IProps {
   currentGroup: IStudentGroup;
-  students: IStudent[];
-  groups: IStudentGroup[];
-  isStudentListLoading: boolean;
-  isStudentGroupLoading: boolean;
 }
 
-function ConnectStudentToGroupForm({
-  currentGroup,
-  groups,
-  isStudentGroupLoading,
-  isStudentListLoading,
-  students,
-}: IProps) {
+function ConnectStudentToGroupForm({ currentGroup }: IProps) {
   // react-hook-form
   const {
     register: searchRegister,
@@ -45,8 +37,20 @@ function ConnectStudentToGroupForm({
   const { register: selectRegister, handleSubmit: selectHandleSubmit } =
     useForm<IStudentSelectForm>();
 
+  // state
+  const [filterOptions, setFilterOptions] = useState<IFilterProps>({
+    group: null,
+    searchQuery: "",
+    searchType: "ID",
+  });
+
+  // hooks
+  const { students, isLoading: isStudentListLoading } =
+    useStudentList(filterOptions);
+  const { groups, isLoading: isStudentGroupLoading } = useStudentGroupList();
+
   // recoil
-  const setFilterOptions = useSetRecoilState(filterPropsState);
+  // const setFilterOptions = useSetRecoilState(filterPropsState);
   const setRefetchStudentGroupList = useSetRecoilState(
     isRefetchStudentGroupListState
   );

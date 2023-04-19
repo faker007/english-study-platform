@@ -1,24 +1,23 @@
 import { SubmitHandler, useForm } from "react-hook-form";
-import { IFilterForm } from "../../../../types/Students";
+import { IFilterForm, IFilterProps } from "../../../../types/Students";
 import { FILTER_SEARCH_TYPES } from "../../../../constants/Students";
-import { useSetRecoilState } from "recoil";
-import { filterPropsState } from "../../../../stores/students";
 import { IStudentGroup } from "../../../../api/models";
 
 interface IProps {
   groupList: IStudentGroup[];
+  setFilterOptions: React.Dispatch<React.SetStateAction<IFilterProps>>;
 }
 
-export default function Filter({ groupList }: IProps) {
+export default function Filter({ groupList, setFilterOptions }: IProps) {
   const { register, handleSubmit, reset } = useForm<IFilterForm>();
-  const setFilterOption = useSetRecoilState(filterPropsState);
+  // const setFilterOption = useSetRecoilState(filterPropsState);
 
   const onSubmit: SubmitHandler<IFilterForm> = ({
     group,
     searchQuery,
     searchType,
   }) =>
-    setFilterOption({
+    setFilterOptions({
       searchQuery,
       searchType,
       group: groupList.find((item) => item.name === group) ?? null,
@@ -26,7 +25,7 @@ export default function Filter({ groupList }: IProps) {
 
   const handleResetForm = () => {
     reset();
-    setFilterOption({ group: null, searchQuery: "", searchType: "ID" });
+    setFilterOptions({ group: null, searchQuery: "", searchType: "ID" });
   };
 
   return (

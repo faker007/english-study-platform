@@ -1,6 +1,4 @@
 import { IStudentGroup } from "../../../../../../api/models";
-import useStudentGroupList from "../../../../../../hooks/useStudentGroupList";
-import useStudentList from "../../../../../../hooks/useStudentList";
 import { IModalContentArgs } from "../../../../../Common/Modal";
 import ModalFrame from "../../../../../Common/Modal/ModalFrame";
 import ConnectStudentToGroupForm from "./ConnectStudentToGroupForm";
@@ -12,17 +10,6 @@ interface IProps extends IModalContentArgs {
 }
 
 function ModalContent({ isOpen, toggleOpen, currentGroup }: IProps) {
-  const { students, isLoading: isStudentListLoading } = useStudentList();
-  const { groups, isLoading: isStudentGroupLoading } = useStudentGroupList();
-
-  const props = {
-    currentGroup,
-    students,
-    isStudentListLoading,
-    groups,
-    isStudentGroupLoading,
-  };
-
   return (
     <ModalFrame
       title="학생 그룹 - 학생 연결"
@@ -31,9 +18,9 @@ function ModalContent({ isOpen, toggleOpen, currentGroup }: IProps) {
       toggleOpen={toggleOpen}
     >
       <div className="flex items-center gap-[30px] px-5 pt-5">
-        <ConnectStudentToGroupForm {...props} />
+        <ConnectStudentToGroupForm currentGroup={currentGroup} />
         <MiddleInstruction />
-        <DisconnectStudentFromGroupForm {...props} />
+        <DisconnectStudentFromGroupForm currentGroup={currentGroup} />
       </div>
     </ModalFrame>
   );

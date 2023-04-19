@@ -5,16 +5,23 @@ import UserListTable from "../../components/Students/List/UserListTable";
 import useStudentList from "../../hooks/useStudentList";
 import { MIN_PAGE } from "../../constants/Students";
 import AdminControlPanel from "../../components/Students/List/AdminControlPanel";
+import { IFilterProps } from "../../types/Students";
 
 export default function StudentList() {
   const [page, setPage] = useState(MIN_PAGE);
-  const { isLoading, students, lastPage } = useStudentList();
+  const [filterOptions, setFilterOptions] = useState<IFilterProps>({
+    group: null,
+    searchQuery: "",
+    searchType: "ID",
+  });
+  const { isLoading, students, lastPage } = useStudentList(filterOptions);
 
   return (
     <div className="mx-auto w-full max-w-[980px]">
       <h2 className="pt-[20px] text-[26px] font-bold text-[#111]">학생 정보</h2>
       <section className="mt-[20px] flex w-full items-center justify-center border border-[#e0e0e0] bg-[#f7f7f7] p-[20px]">
         <Filter
+          setFilterOptions={setFilterOptions}
           groupList={[
             {
               id: "1",

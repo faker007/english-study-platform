@@ -3,14 +3,11 @@ import { IUser } from "../api/models";
 import { STUDENT_COLLECTION } from "../api/collections";
 import { getDocs } from "firebase/firestore";
 import { PAGE_PER } from "../constants/Students";
-import { useRecoilState, useRecoilValue } from "recoil";
-import {
-  filterPropsState,
-  isRefetchStudentListState,
-} from "../stores/students";
-import { FilterSearchType } from "../types/Students";
+import { useRecoilState } from "recoil";
+import { isRefetchStudentListState } from "../stores/students";
+import { FilterSearchType, IFilterProps } from "../types/Students";
 
-export default function useStudentList() {
+export default function useStudentList(filterOptions: IFilterProps) {
   // states
   const [isLoading, setIsLoading] = useState(false);
   const [students, setStudents] = useState<IUser[]>([]);
@@ -19,7 +16,7 @@ export default function useStudentList() {
   const [lastPage, setLastPage] = useState(1);
 
   // recoil
-  const filterOptions = useRecoilValue(filterPropsState);
+  // const filterOptions = useRecoilValue(filterPropsState);
   const [isRefetch, setIsRefetch] = useRecoilState(isRefetchStudentListState);
 
   const fetchStudentList = useCallback(async () => {
