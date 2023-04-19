@@ -1,9 +1,9 @@
 import { ILNBItem } from "../../types/GNB";
 
 export const STUDENT_MANAGE_LNB_ITEMS: ILNBItem[] = [
-  { text: "학생 정보", url: "#" },
-  { text: "학생 그룹", url: "#" },
-  { text: "출석부", url: "#" },
+  { text: "학생 정보", url: "/students/list" },
+  { text: "학생 그룹", url: "/students/group" },
+  // { text: "출석부", url: "#" },
 ];
 
 export const PROBLEM_BANK_LNB_ITEMS: ILNBItem[] = [

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   STUDENT_MANAGE_LNB_ITEMS,
   ESSAY_MANAGE_LNB_ITEMS,
@@ -9,9 +8,13 @@ import {
 import { TeacherMenuItems } from "../../../../types/GNB";
 import GNBLink from "../Link/gnb";
 import LNBList from "../LNBList";
+import { useLocation } from "react-router-dom";
+import { useRecoilState } from "recoil";
+import { activeMenuState } from "../../../../stores/LNB";
 
 export default function TeacherMenu() {
-  const [activeMenu, setActiveMenu] = useState<TeacherMenuItems>();
+  const [activeMenu, setActiveMenu] = useRecoilState(activeMenuState);
+  const location = useLocation();
 
   function handleActiveMenu(menu: TeacherMenuItems) {
     setActiveMenu(menu);
@@ -25,7 +28,11 @@ export default function TeacherMenu() {
             onMouseEnter={() => handleActiveMenu("STUDENT_MANAGE")}
             className="relative h-full"
           >
-            <GNBLink text="학생 관리" url="#" />
+            <GNBLink
+              text="학생 관리"
+              url="/students"
+              active={location.pathname.includes("students")}
+            />
             {activeMenu === "STUDENT_MANAGE" && (
               <LNBList data={STUDENT_MANAGE_LNB_ITEMS} />
             )}
@@ -34,7 +41,7 @@ export default function TeacherMenu() {
             onMouseEnter={() => handleActiveMenu("PROBLEM_BANK")}
             className="relative h-full"
           >
-            <GNBLink text="문제 은행" active url="#" />
+            <GNBLink text="문제 은행" url="#" />
             {activeMenu === "PROBLEM_BANK" && (
               <LNBList data={PROBLEM_BANK_LNB_ITEMS} />
             )}

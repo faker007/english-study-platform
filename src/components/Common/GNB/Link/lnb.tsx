@@ -1,4 +1,5 @@
 import { CSSProperties } from "react";
+import { Link } from "react-router-dom";
 
 export default function LNBLink({
   text,
@@ -12,14 +13,14 @@ export default function LNBLink({
   style?: CSSProperties;
 }) {
   return (
-    <a
-      href={url}
+    <Link
+      to={url}
       style={{ ...style }}
       className={`relative flex h-full items-center text-[18px] font-bold ${
         active ? "text-[#007dc3] underline" : "text-[#555]"
       }`}
     >
       {text}
-    </a>
+    </Link>
   );
 }
