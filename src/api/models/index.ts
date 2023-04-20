@@ -21,9 +21,12 @@ export interface IUser extends ICommonModel {
   lastLoginTime: string;
 }
 
+export interface IStudent extends IUser {}
+
 export interface IStudentGroup extends ICommonModel {
   studentIDs: string[];
-  teacherID: string[];
+  teacherIDs: string[];
+  teacherGroupIDs: string[];
   name: string;
 }
 
@@ -31,4 +34,8 @@ export interface ITeacher extends IUser {
   isAdmin: boolean;
 }
 
-export interface IStudent extends IUser {}
+export interface ITeacherGroup extends ICommonModel {
+  studentGroupIDs: string[];
+  teacherIDs: string[];
+  name: string;
+}

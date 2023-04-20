@@ -8,3 +8,7 @@ export const STUDENT_GROUP_COLLECTION = collection(
   fbStore,
   COLLECTIONS.studentGroup
 );
+export const TEACHER_GROUP_COLLECTION = collection(
+  fbStore,
+  COLLECTIONS.teacherGroup
+);

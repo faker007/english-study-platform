@@ -18,7 +18,7 @@ export default function StudentGroup() {
     <div className="mx-auto w-full max-w-[980px]">
       <h2 className="pt-[20px] text-[26px] font-bold text-[#111]">학생 그룹</h2>
       <section className="mt-[20px] flex w-full items-center justify-center border border-[#e0e0e0] bg-[#f7f7f7] p-[20px]">
-        <Filter setFilterOptions={setFilterOptions} />
+        <Filter setPage={setPage} setFilterOptions={setFilterOptions} />
       </section>
       <section className="mt-[30px]">
         <div className="flex items-end justify-between">

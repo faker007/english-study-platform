@@ -25,9 +25,11 @@ export async function createUser({
   role: TUserRole;
   phoneNumber: string;
   name: string;
-}): Promise<{ ok: boolean; error?: string }> {
+}): Promise<{ ok: boolean; error?: string; docId?: string }> {
+  const targetCollection =
+    role === "STUDENT" ? STUDENT_COLLECTION : TEACHER_COLLECTION;
   const q = query(
-    role === "STUDENT" ? STUDENT_COLLECTION : TEACHER_COLLECTION,
+    targetCollection,
     where("accountId", "==", accountId),
     where("password", "==", password)
   );
@@ -49,13 +51,10 @@ export async function createUser({
     lastLoginTime: "",
   };
 
-  const doc = await addDoc(
-    role === "STUDENT" ? STUDENT_COLLECTION : TEACHER_COLLECTION,
-    data as IStudent
-  );
+  const doc = await addDoc(targetCollection, data as IStudent);
   await updateDoc(doc, { id: doc.id });
 
-  return { ok: true };
+  return { ok: true, docId: doc.id };
 }
 
 export function updateLocalstorageIdRemember({

@@ -4,6 +4,7 @@ import {
   PROBLEM_BANK_LNB_ITEMS,
   REFERENCE_LNB_ITEMS,
   TEST_MANAGE_LNB_ITEMS,
+  TEACHER_MANAGE_LNB_ITEMS,
 } from "../../../../constants/GNB";
 import { TeacherMenuItems } from "../../../../types/GNB";
 import GNBLink from "../Link/gnb";
@@ -71,6 +72,19 @@ export default function TeacherMenu() {
             <GNBLink text="자료실" url="#" />
             {activeMenu === "REFERENCE" && (
               <LNBList data={REFERENCE_LNB_ITEMS} />
+            )}
+          </li>
+          <li
+            onMouseEnter={() => handleActiveMenu("TEACHER_MANAGE")}
+            className="relative h-full"
+          >
+            <GNBLink
+              text="강사 관리"
+              url="/teachers"
+              active={location.pathname.includes("teachers")}
+            />
+            {activeMenu === "TEACHER_MANAGE" && (
+              <LNBList data={TEACHER_MANAGE_LNB_ITEMS} />
             )}
           </li>
         </ul>

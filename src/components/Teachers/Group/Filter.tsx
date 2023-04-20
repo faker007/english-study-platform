@@ -1,5 +1,5 @@
 import { SubmitHandler, useForm } from "react-hook-form";
-import { IFilterProps } from "../../../types/Students";
+import { ITeacherGroupListFilter } from "../../../types/Teachers";
 import { MIN_PAGE } from "../../../constants/Students";
 
 interface IForm {
@@ -7,23 +7,21 @@ interface IForm {
 }
 
 interface IProps {
-  setFilterOptions: React.Dispatch<
-    React.SetStateAction<Pick<IFilterProps, "searchQuery">>
-  >;
+  setFilter: React.Dispatch<React.SetStateAction<ITeacherGroupListFilter>>;
   setPage: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export default function Filter({ setFilterOptions, setPage }: IProps) {
+export default function Filter({ setFilter, setPage }: IProps) {
   const { register, handleSubmit, reset } = useForm<IForm>();
 
   const onSubmit: SubmitHandler<IForm> = ({ searchQuery }) => {
-    setFilterOptions({ searchQuery });
+    setFilter({ searchQuery });
     setPage(MIN_PAGE);
   };
 
   const handleResetForm = () => {
     reset();
-    setFilterOptions({ searchQuery: "" });
+    setFilter({ searchQuery: "" });
     setPage(MIN_PAGE);
   };
 

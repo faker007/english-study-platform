@@ -1,14 +1,14 @@
 import { useRef, useState } from "react";
 import { useSetRecoilState } from "recoil";
-import { isRefetchStudentGroupListState } from "../../../../stores/students";
-import { STUDENT_GROUP_COLLECTION } from "../../../../api/collections";
+import { TEACHER_GROUP_COLLECTION } from "../../../../api/collections";
 import { addDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
-import { IStudentGroup } from "../../../../api/models";
+import { ITeacherGroup } from "../../../../api/models";
 import dayjs from "dayjs";
+import { isRefetchTeacherGroupListState } from "../../../../stores/teachers";
 
 function GroupForm() {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const setIsRefetch = useSetRecoilState(isRefetchStudentGroupListState);
+  const setIsRefetch = useSetRecoilState(isRefetchTeacherGroupListState);
   const [isLoading, setIsLoading] = useState(false);
 
   const resetField = () => {
@@ -36,7 +36,7 @@ function GroupForm() {
         if (isDuplicate) {
           alert("중복 되는 그룹명 입니다.");
         } else {
-          await createStudentGroup(groupName);
+          await createTeacherGroup(groupName);
           setIsRefetch(true);
           alert("그룹 생성 완료!");
         }
@@ -79,23 +79,22 @@ function GroupForm() {
 export default GroupForm;
 
 async function checkGroupNameDuplicate(groupName: string) {
-  const q = query(STUDENT_GROUP_COLLECTION, where("name", "==", groupName));
+  const q = query(TEACHER_GROUP_COLLECTION, where("name", "==", groupName));
   const snapShot = await getDocs(q);
 
   return !snapShot.empty;
 }
 
-async function createStudentGroup(groupName: string) {
-  const data: IStudentGroup = {
+async function createTeacherGroup(groupName: string) {
+  const data: ITeacherGroup = {
     id: "",
     name: groupName,
-    studentIDs: [],
+    studentGroupIDs: [],
     teacherIDs: [],
-    teacherGroupIDs: [],
     createdAt: dayjs().toISOString(),
     updatedAt: dayjs().toISOString(),
   };
 
-  const newDoc = await addDoc(STUDENT_GROUP_COLLECTION, data);
+  const newDoc = await addDoc(TEACHER_GROUP_COLLECTION, data);
   await updateDoc(newDoc, { id: newDoc.id });
 }

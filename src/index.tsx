@@ -12,6 +12,9 @@ import StudentGroup from "./pages/students/group";
 import { RecoilRoot } from "recoil";
 import { userState } from "./stores/user";
 import { LOCALSTORAGE_USER_TOKEN } from "./constants/Login";
+import Teachers from "./pages/teachers";
+import TeacherList from "./pages/teachers/list";
+import TeacherGroup from "./pages/teachers/group";
 
 const router = createBrowserRouter([
   {
@@ -29,6 +32,14 @@ const router = createBrowserRouter([
             children: [
               { path: "list", element: <StudentList /> },
               { path: "group", element: <StudentGroup /> },
+            ],
+          },
+          {
+            path: "teachers",
+            element: <Teachers />,
+            children: [
+              { path: "list", element: <TeacherList /> },
+              { path: "group", element: <TeacherGroup /> },
             ],
           },
         ],

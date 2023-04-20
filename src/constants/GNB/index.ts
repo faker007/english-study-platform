@@ -32,3 +32,8 @@ export const REFERENCE_LNB_ITEMS: ILNBItem[] = [
   { text: "강사 자료실", url: "#" },
   { text: "수업 자료실", url: "#" },
 ];
+
+export const TEACHER_MANAGE_LNB_ITEMS: ILNBItem[] = [
+  { text: "강사 계정", url: "/teachers/list" },
+  { text: "강사 그룹", url: "/teachers/group" },
+];
