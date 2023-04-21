@@ -76,6 +76,7 @@ export default function useTeacherList(filter: ITeacherListFilter) {
       }
 
       setFilteredTeachers(container);
+      setLastPage(Math.ceil(container.length / PAGE_PER));
     }
   }, [filter, teachers]);
 

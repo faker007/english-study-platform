@@ -75,6 +75,7 @@ export default function useTeacherGroupList(filter: ITeacherGroupListFilter) {
       }
 
       setFilteredTeacherGroups(container);
+      setLastPage(Math.ceil(container.length / PAGE_PER));
     }
   }, [filter, teacherGroups]);
 

@@ -31,6 +31,7 @@ export default function Filter({ groupList, setFilter, setPage }: IProps) {
   const handleResetForm = () => {
     reset();
     setFilter({ group: null, searchQuery: "" });
+    setPage(MIN_PAGE);
   };
 
   useEffect(() => {

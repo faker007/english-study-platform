@@ -7,13 +7,21 @@ import {
   isRefetchTeacherListState,
 } from "../../../stores/teachers";
 import { createUser } from "../../../utils/Login";
-import { doc, getDocs, query, updateDoc, where } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { TEACHER_COLLECTION } from "../../../api/collections";
 import { 초기_패스워드_값_생성 } from "../../../utils/Students";
 import ModalFrame from "../../Common/Modal/ModalFrame";
 import { fbStore } from "../../../firebase";
 import { COLLECTIONS } from "../../../api/constants";
 import useTeacherGroupList from "../../../hooks/useTeacherGroupList";
+import { ITeacherGroup } from "../../../api/models";
 
 interface IModalContentForm {
   accountId: string;
@@ -67,6 +75,36 @@ export default function ModalContent({
   const { teacherGroups } = useTeacherGroupList({ searchQuery: "" });
 
   // funcs
+  async function updateTeacherIdsFromTeacherGroup({
+    groupId,
+    teacherId,
+  }: {
+    groupId: string;
+    teacherId: string;
+  }) {
+    const groupDoc = doc(fbStore, COLLECTIONS.teacherGroup, groupId);
+    const groupObj = await getDoc(groupDoc);
+
+    if (groupObj.exists()) {
+      const groupData = groupObj.data() as ITeacherGroup;
+
+      await updateDoc(groupDoc, {
+        teacherIDs: [...groupData.teacherIDs, teacherId],
+      });
+    }
+  }
+
+  async function updateGroupIdFromTeacher({
+    groupId,
+    teacherId,
+  }: {
+    groupId: string;
+    teacherId: string;
+  }) {
+    const newTeacherDoc = doc(fbStore, COLLECTIONS.teacher, teacherId);
+    await updateDoc(newTeacherDoc, { groupIDs: groupId ? [groupId] : [] });
+  }
+
   const onSubmit: SubmitHandler<IModalContentForm> = async ({
     accountId,
     name,
@@ -84,8 +122,10 @@ export default function ModalContent({
       });
 
       if (ok && docId) {
-        const newTeacherDoc = doc(fbStore, COLLECTIONS.teacher, docId);
-        await updateDoc(newTeacherDoc, { groupIDs: groupId ? [groupId] : [] });
+        await Promise.all([
+          updateGroupIdFromTeacher({ groupId, teacherId: docId }),
+          updateTeacherIdsFromTeacherGroup({ groupId, teacherId: docId }),
+        ]);
       }
 
       if (ok) {
