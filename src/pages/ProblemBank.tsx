@@ -10,7 +10,7 @@ import Modal, { IModalContentArgs } from "../components/Common/Modal";
 import { db } from "../firebase";
 import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
 
-import ReactQuill, { Quill } from "react-quill";
+import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import EditorToolbar, { modules, formats } from "../components/EditorToolbar";
 
