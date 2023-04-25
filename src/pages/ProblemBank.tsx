@@ -10,7 +10,6 @@ import Modal, { IModalContentArgs } from "../components/Common/Modal";
 import { db } from "../firebase";
 import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
 
-// import react-quill and css
 import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import EditorToolbar, { modules, formats } from "../components/EditorToolbar";
@@ -470,7 +469,10 @@ function ModalComponent({
 
             <ReactQuill
               style={{ width: "100%", height: 500 }}
-              onChange={(value) => {}}
+              onChange={(value) => {
+                setQuillContent(value);
+              }}
+              value={quillContent}
               modules={modules}
               formats={formats}
             />
@@ -488,56 +490,13 @@ function ModalComponent({
   );
 }
 
-function CustomToolbar() {
-  return (
-    <div id="toolbar">
-      <select className="ql-font">
-        <option value="arial" selected>
-          Arial
-        </option>
-        <option value="comic-sans">Comic Sans</option>
-        <option value="courier-new">Courier New</option>
-        <option value="georgia">Georgia</option>
-        <option value="helvetica">Helvetica</option>
-        <option value="lucida">Lucida</option>
-      </select>
-      <select className="ql-size">
-        <option value="extra-small">Size 1</option>
-        <option value="small">Size 2</option>
-        <option value="medium" selected>
-          Size 3
-        </option>
-        <option value="large">Size 4</option>
-      </select>
-      <select className="ql-align" />
-      <select className="ql-color" />
-      <select className="ql-background" />
-      <button className="ql-clean" />
-      <button className="ql-insertHeart"></button>
-    </div>
-  );
-}
-
-const Size = Quill.import("formats/size");
-Size.whitelist = ["extra-small", "small", "medium", "large"];
-Quill.register(Size, true);
-
-const Font = Quill.import("formats/font");
-Font.whitelist = [
-  "arial",
-  "comic-sans",
-  "courier-new",
-  "georgia",
-  "helvetica",
-  "lucida",
-];
-Quill.register(Font, true);
-
+/** 문제 추가 오른쪽 컴포넌트 */
 function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
-  const [selectedValue, setSelectedValue] = useState(""); // 응답 유형
-  const [selectedValue2, setSelectedValue2] = useState(""); // 기호 유형 (100 ~ 700)
-  const [selectedValue3, setSelectedValue3] = useState(""); // 정답 (A, B, C, D)
-  const [score, setScore] = useState(0); // 배점
+  const [selectedValue, setSelectedValue] = useState("단일 선택"); // 응답 유형 ("단일 선택", "복수 선택", "단답형")
+  const [selectedValue2, setSelectedValue2] = useState("100"); // 기호 유형 (100 ~ 700)
+  const [selectedValue3, setSelectedValue3] = useState("A"); // 정답 ("A", "B", "C", "D")
+  const [score, setScore] = useState(1); // 배점
+  const [quillContent, setQuillContent] = useState("");
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-white p-5">
@@ -574,7 +533,10 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
 
         <ReactQuill
           style={{ width: "100%", height: 500 }}
-          onChange={(value) => {}}
+          onChange={(value) => {
+            setQuillContent(value);
+          }}
+          value={quillContent}
           modules={modules}
           formats={formats}
         />
@@ -602,12 +564,14 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
               return (
                 <>
                   <input
+                    id={"mondais" + i}
+                    name={"mondais" + i}
                     value={value}
-                    name="mondais"
                     type={"radio"}
                     checked={selectedValue === value}
                     onChange={(e) => {
                       setSelectedValue(e.target.value);
+                      console.log(e.target.value);
                     }}
                   />
 
@@ -620,7 +584,13 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
           </div>
 
           {/* 기호 유형 */}
-          <select onChange={() => {}}>
+          <select
+            onChange={(e) => {
+              setSelectedValue2(e.target.value);
+
+              console.log(selectedValue2);
+            }}
+          >
             <option value="100">A, B, C, D</option>
             <option value="200">A, B, C, D, E</option>
             <option value="300">F, G, H, J</option>
@@ -636,11 +606,13 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
               return (
                 <>
                   <input
-                    value={value}
-                    name="correct"
                     type={"radio"}
+                    id={"correctAnswer" + i}
+                    name={"correctAnswer" + i}
+                    value={value}
                     checked={selectedValue3 === value}
                     onChange={(e) => {
+                      console.log(e.target.value);
                       setSelectedValue3(e.target.value);
                     }}
                   />
@@ -654,7 +626,13 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
           </div>
 
           {/* 배점 */}
-          <select onChange={() => {}}>
+          <select
+            onChange={(e) => {
+              setScore(Number(e.target.value));
+
+              console.log("배점: " + e.target.value);
+            }}
+          >
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -673,10 +651,25 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
 
       {/* TODO: 해시 태그 input type: text */}
 
-      {/* TODO: 응답 유형 input type: radio */}
-
       <button
-        onClick={() => {}}
+        onClick={async () => {
+          const problemInfoCF = collection(db, "problemInfo");
+
+          try {
+            const result = await addDoc(problemInfoCF, {
+              quillContent,
+              resType: selectedValue, // 응답 유형
+              typoType: Number(selectedValue2), // 기호 유형
+              correctAnswer: selectedValue3, // 정답
+              score: Number(score), // 배점
+              problemType: "(문제 유형 없음)", // TODO: Do not hard-coded here
+            });
+
+            console.log(result);
+          } catch (err) {
+            console.log(err);
+          }
+        }}
         className="rounded-md bg-rose-500 px-5 py-2 text-white"
       >
         저장
