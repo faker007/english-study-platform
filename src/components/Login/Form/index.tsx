@@ -166,7 +166,7 @@ async function handleLogin({
     LOCALSTORAGE_USER_TOKEN,
     JSON.stringify({ role, data, createdAt: dayjs().toISOString() })
   );
-  await updateUserRecentLoginTime(data);
+  await updateUserRecentLoginTime(data, role);
   alert(`환영합니다 ${data.accountId}님`);
   navigate("/students/list");
   setUser(data);

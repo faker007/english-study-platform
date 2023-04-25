@@ -6,7 +6,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { IStudent, IUser, TUserRole } from "../../api/models";
+import { IUser, TUserRole } from "../../api/models";
 import { fbStore } from "../../firebase";
 import { LOCALSTORAGE_ID_REMEBER } from "../../constants/Login";
 import { STUDENT_COLLECTION, TEACHER_COLLECTION } from "../../api/collections";
@@ -49,10 +49,15 @@ export async function createUser({
     createdAt: dayjs().toISOString(),
     updatedAt: dayjs().toISOString(),
     lastLoginTime: "",
+    role,
   };
 
-  const doc = await addDoc(targetCollection, data as IStudent);
+  const doc = await addDoc(targetCollection, data);
   await updateDoc(doc, { id: doc.id });
+
+  if (role === "TEACHER") {
+    await updateDoc(doc, { isAdmin: false });
+  }
 
   return { ok: true, docId: doc.id };
 }
@@ -76,8 +81,15 @@ export function updateLocalstorageIdRemember({
   }
 }
 
-export async function updateUserRecentLoginTime(user: IUser) {
-  return updateDoc(doc(fbStore, COLLECTIONS.student, user.id), {
-    lastLoginTime: new Date().toISOString(),
-  });
+export async function updateUserRecentLoginTime(user: IUser, role: TUserRole) {
+  return updateDoc(
+    doc(
+      fbStore,
+      role === "STUDENT" ? COLLECTIONS.student : COLLECTIONS.teacher,
+      user.id
+    ),
+    {
+      lastLoginTime: new Date().toISOString(),
+    }
+  );
 }

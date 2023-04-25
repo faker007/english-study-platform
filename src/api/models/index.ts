@@ -19,6 +19,7 @@ export interface IUser extends ICommonModel {
   groupIDs: string[];
   isEnabled: boolean;
   lastLoginTime: string;
+  role: TUserRole;
 }
 
 export interface IStudent extends IUser {}

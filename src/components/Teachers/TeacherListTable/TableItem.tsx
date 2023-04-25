@@ -49,7 +49,7 @@ export default function TableItem({ index, teacher }: IProps) {
   }, [groupIDs]);
 
   if (isLoading) {
-    return <></>;
+    return <div className="h-[50px] w-auto" />;
   }
 
   return (
