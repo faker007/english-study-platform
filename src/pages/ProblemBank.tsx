@@ -11,8 +11,9 @@ import { db } from "../firebase";
 import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
 
 // import react-quill and css
-import ReactQuill from "react-quill";
+import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import EditorToolbar, { modules, formats } from "../components/EditorToolbar";
 
 export default function ProblemBank() {
   const [problemSetName, setProblemSetName] = useState("");
@@ -65,7 +66,6 @@ export default function ProblemBank() {
     setProblemSets(tempArray);
   };
 
-  // Initial useEffect
   useEffect(() => {
     데이터_가져오기();
   }, []);
@@ -192,6 +192,7 @@ function ModalComponent({
   const [isShowQuill, setIsShowQuill] = useState(false);
   const [quillContent, setQuillContent] = useState("");
   const [jimuns, setJimuns] = useState([]);
+  const [isJimun, setIsJimin] = useState(true); // true: 지문 추가, false: 문제 추가
   // const quillRef = useRef(null);
 
   // TODO: 지문_추가
@@ -236,6 +237,18 @@ function ModalComponent({
   // TODO: 새로 고침
   const 새로_고침 = async () => {};
 
+  // TODO: 문제 추가
+  const 문제_추가 = async () => {
+    // TODO: react-quill 초기화
+
+    setIsJimin(true);
+
+    setIsShowQuill(!isShowQuill);
+  };
+
+  // TODO: 해설 이미지 업로드 추가
+  const 해설_이미지_업로드 = async () => {};
+
   const 데이터_가져오기 = async () => {
     const tempArray: any = [];
     const jimunsCF = collection(db, "jimuns");
@@ -250,6 +263,9 @@ function ModalComponent({
 
     setJimuns(tempArray);
   };
+
+  // TODO: 문제별_지문_설정
+  const 문제별_지문_설정 = async () => {};
 
   useEffect(() => {
     const inner = async () => {
@@ -294,7 +310,7 @@ function ModalComponent({
               <th scope="col">실행</th>
             </thead>
             <tbody>
-              {jimuns.map((jimun: any) => {
+              {jimuns?.map((jimun: any) => {
                 return (
                   <tr
                     onClick={() => {
@@ -380,66 +396,291 @@ function ModalComponent({
             </tbody>
           </table>
         </div>
+
+        {/* 문제 목록 */}
+        <div className="flex flex-row">
+          <span className="text-2xl font-medium">문제 목록</span>
+
+          <button
+            onClick={() => {
+              문제_추가();
+            }}
+            className="rounded-md bg-rose-500 px-5 py-2 text-white"
+          >
+            문제 추가
+          </button>
+
+          <button
+            onClick={toggleOpen}
+            className="rounded-md bg-rose-500 px-5 py-2 text-white"
+          >
+            문제별 지문 설정
+          </button>
+        </div>
       </div>
 
       <Spacer width={10} />
 
-      <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-white p-5">
-        <div
-          style={{
-            display: "flex",
-            width: "100%",
-            height: 40,
-            borderBottomWidth: 3,
-            borderBottomColor: "black",
-          }}
-        >
-          <h1 style={{ fontSize: 24, fontWeight: 400 }}>지문 정보</h1>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            width: "100%",
-            height: 50,
-            borderBottomWidth: 3,
-            borderBottomColor: "black",
-            paddingLeft: 10,
-            paddingRight: 10,
-          }}
-        >
-          <h3>지문제목</h3>
-
-          <input
-            type="text"
+      {isShowQuill ? (
+        <ProblemInfoComponent isJimun={isJimun} />
+      ) : (
+        <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-white p-5">
+          <div
             style={{
-              width: "85%",
-              height: 30,
-              backgroundColor: "#fafafa",
-              marginLeft: 30,
+              display: "flex",
+              width: "100%",
+              height: 40,
+              borderBottomWidth: 3,
+              borderBottomColor: "black",
             }}
-            value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
+          >
+            <h1 style={{ fontSize: 24, fontWeight: 400 }}>지문 정보</h1>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              width: "100%",
+              height: 50,
+              borderBottomWidth: 3,
+              borderBottomColor: "black",
+              paddingLeft: 10,
+              paddingRight: 10,
             }}
-          />
+          >
+            <h3>지문제목</h3>
+
+            <input
+              type="text"
+              style={{
+                width: "85%",
+                height: 30,
+                backgroundColor: "#fafafa",
+                marginLeft: 30,
+              }}
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+              }}
+            />
+          </div>
+
+          <div className="text-editor">
+            <EditorToolbar />
+
+            <ReactQuill
+              style={{ width: "100%", height: 500 }}
+              onChange={(value) => {}}
+              modules={modules}
+              formats={formats}
+            />
+          </div>
+
+          <button
+            onClick={지문_추가_저장}
+            className="rounded-md bg-rose-500 px-5 py-2 text-white"
+          >
+            저장
+          </button>
         </div>
+      )}
+    </div>
+  );
+}
+
+function CustomToolbar() {
+  return (
+    <div id="toolbar">
+      <select className="ql-font">
+        <option value="arial" selected>
+          Arial
+        </option>
+        <option value="comic-sans">Comic Sans</option>
+        <option value="courier-new">Courier New</option>
+        <option value="georgia">Georgia</option>
+        <option value="helvetica">Helvetica</option>
+        <option value="lucida">Lucida</option>
+      </select>
+      <select className="ql-size">
+        <option value="extra-small">Size 1</option>
+        <option value="small">Size 2</option>
+        <option value="medium" selected>
+          Size 3
+        </option>
+        <option value="large">Size 4</option>
+      </select>
+      <select className="ql-align" />
+      <select className="ql-color" />
+      <select className="ql-background" />
+      <button className="ql-clean" />
+      <button className="ql-insertHeart"></button>
+    </div>
+  );
+}
+
+const Size = Quill.import("formats/size");
+Size.whitelist = ["extra-small", "small", "medium", "large"];
+Quill.register(Size, true);
+
+const Font = Quill.import("formats/font");
+Font.whitelist = [
+  "arial",
+  "comic-sans",
+  "courier-new",
+  "georgia",
+  "helvetica",
+  "lucida",
+];
+Quill.register(Font, true);
+
+function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
+  const [selectedValue, setSelectedValue] = useState(""); // 응답 유형
+  const [selectedValue2, setSelectedValue2] = useState(""); // 기호 유형 (100 ~ 700)
+  const [selectedValue3, setSelectedValue3] = useState(""); // 정답 (A, B, C, D)
+  const [score, setScore] = useState(0); // 배점
+
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-white p-5">
+      <div
+        style={{
+          display: "flex",
+          width: "100%",
+          height: 40,
+          borderBottomWidth: 3,
+          borderBottomColor: "black",
+        }}
+      >
+        <h1 style={{ fontSize: 24, fontWeight: 400 }}>
+          {isJimun ? "문제 정보" : "문제 추가"}
+        </h1>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          width: "100%",
+          height: 50,
+          borderBottomWidth: 3,
+          borderBottomColor: "black",
+          paddingLeft: 10,
+          paddingRight: 10,
+        }}
+      >
+        <h3>문제 정보</h3>
+      </div>
+
+      <div className="text-editor">
+        <EditorToolbar />
 
         <ReactQuill
-          style={{ width: "100%", height: "200" }}
-          onChange={(value) => {
-            setQuillContent(value);
-          }}
-          value={quillContent}
+          style={{ width: "100%", height: 500 }}
+          onChange={(value) => {}}
+          modules={modules}
+          formats={formats}
         />
-
-        <button
-          onClick={지문_추가_저장}
-          className="rounded-md bg-rose-500 px-5 py-2 text-white"
-        >
-          저장
-        </button>
       </div>
+
+      <Spacer height={50} />
+
+      <div className="flex">
+        <div className="flex flex-col">
+          <p>해설 이미지</p>
+          <p>해시 태그</p>
+          <p>응답 유형</p>
+          <p>기호 유형</p>
+          <p>정답</p>
+          <p>배점</p>
+          <p>문제 유형</p>
+        </div>
+
+        <div className="flex flex-col">
+          <input type={"text"} />
+          <input type={"text"} />
+          {/* 응답 유형 */}
+          <div className="flex">
+            {["단일 선택", "복수 선택", "단답형"].map((value, i) => {
+              return (
+                <>
+                  <input
+                    value={value}
+                    name="mondais"
+                    type={"radio"}
+                    checked={selectedValue === value}
+                    onChange={(e) => {
+                      setSelectedValue(e.target.value);
+                    }}
+                  />
+
+                  <p>{value}</p>
+
+                  <Spacer width={10} />
+                </>
+              );
+            })}
+          </div>
+
+          {/* 기호 유형 */}
+          <select onChange={() => {}}>
+            <option value="100">A, B, C, D</option>
+            <option value="200">A, B, C, D, E</option>
+            <option value="300">F, G, H, J</option>
+            <option value="400">F, G, H, J, K</option>
+            <option value="500">1, 2, 3, 4</option>
+            <option value="600">1, 2, 3, 4, 5</option>
+            <option value="700">T, F, T, F, C, E</option>
+          </select>
+
+          {/* 정답 */}
+          <div className="flex">
+            {["A", "B", "C", "D"].map((value, i) => {
+              return (
+                <>
+                  <input
+                    value={value}
+                    name="correct"
+                    type={"radio"}
+                    checked={selectedValue3 === value}
+                    onChange={(e) => {
+                      setSelectedValue3(e.target.value);
+                    }}
+                  />
+
+                  <p>{value}</p>
+
+                  <Spacer width={10} />
+                </>
+              );
+            })}
+          </div>
+
+          {/* 배점 */}
+          <select onChange={() => {}}>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+
+          {/* 문제 유형 */}
+          <select onChange={() => {}}>
+            <option value="1">(문제 유형 없음)</option>
+          </select>
+          <input type={"text"} />
+        </div>
+      </div>
+      {/* TODO: 해설 이미지 input type: image */}
+
+      {/* TODO: 해시 태그 input type: text */}
+
+      {/* TODO: 응답 유형 input type: radio */}
+
+      <button
+        onClick={() => {}}
+        className="rounded-md bg-rose-500 px-5 py-2 text-white"
+      >
+        저장
+      </button>
     </div>
   );
 }
