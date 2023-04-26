@@ -1,13 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
-import { IUser } from "../api/models";
-import { STUDENT_COLLECTION } from "../api/collections";
-import { getDocs } from "firebase/firestore";
-import { PAGE_PER } from "../constants/Students";
+import { IUser, IStudentGroup, IStudent } from "../api/models";
+import {
+  STUDENT_COLLECTION,
+  STUDENT_GROUP_COLLECTION,
+} from "../api/collections";
+import { doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { MIN_PAGE, PAGE_PER } from "../constants/Students";
 import { useRecoilState } from "recoil";
 import { isRefetchStudentListState } from "../stores/students";
 import { FilterSearchType, IFilterProps } from "../types/Students";
+import useUser from "./useUser";
+import { fbStore } from "../firebase";
+import { COLLECTIONS } from "../api/constants";
+import { isAdmin } from "../api/utils/teacher";
 
-export default function useStudentList(filterOptions: IFilterProps) {
+function useStudentList(filterOptions: IFilterProps) {
   // states
   const [isLoading, setIsLoading] = useState(false);
   const [students, setStudents] = useState<IUser[]>([]);
@@ -16,30 +23,42 @@ export default function useStudentList(filterOptions: IFilterProps) {
   const [lastPage, setLastPage] = useState(1);
 
   // recoil
-  // const filterOptions = useRecoilValue(filterPropsState);
   const [isRefetch, setIsRefetch] = useRecoilState(isRefetchStudentListState);
+  const { user } = useUser();
 
   const fetchStudentList = useCallback(async () => {
+    let studentIds: string[] = [];
+    const container: IStudent[] = [];
     setIsLoading(true);
+
     try {
-      const snapshot = await getDocs(STUDENT_COLLECTION);
+      if (user) {
+        const teacherGroupId = user.groupIDs[0] ?? "";
 
-      if (!snapshot.empty) {
-        const container: IUser[] = [];
+        if (teacherGroupId) {
+          await fetchStudentIdsFromGroup(teacherGroupId, studentIds);
+        }
 
-        snapshot.forEach(async (doc) => {
-          container.push(doc.data() as IUser);
-        });
-
-        setStudents(container);
-        setFilteredStudents(container);
-        setLastPage(Math.ceil(container.length / PAGE_PER));
-        setIsRefetch(false);
+        if (isAdmin(user)) {
+          await fetchStudentIdsFromCollection(studentIds);
+        }
       }
+
+      // 중복 제거
+      studentIds = Array.from(new Set(studentIds));
+
+      // studentList 채우기
+      await fetchStudentListFromIds(studentIds, container);
     } catch (error) {
       console.error(error);
       setError(error);
     }
+
+    setStudents(container);
+    setFilteredStudents(container);
+    setLastPage(Math.max(Math.ceil(container.length / PAGE_PER), MIN_PAGE));
+    setIsRefetch(false);
+
     setIsLoading(false);
   }, [
     setIsLoading,
@@ -48,6 +67,7 @@ export default function useStudentList(filterOptions: IFilterProps) {
     setLastPage,
     setError,
     setIsRefetch,
+    user,
   ]);
 
   // effects
@@ -92,6 +112,8 @@ export default function useStudentList(filterOptions: IFilterProps) {
   };
 }
 
+export default useStudentList;
+
 function filterStudentByQuery({
   searchQuery,
   searchType,
@@ -126,4 +148,46 @@ function filterStudentByQuery({
     default:
       return false;
   }
+}
+
+async function fetchStudentListFromIds(
+  studentIds: string[],
+  container: IStudent[]
+) {
+  const studentListPromises = studentIds.map(async (studentId) => {
+    const studentDoc = doc(fbStore, COLLECTIONS.student, studentId);
+    const studentObj = await getDoc(studentDoc);
+
+    if (studentObj.exists()) container.push(studentObj.data() as IStudent);
+  });
+
+  await Promise.all(studentListPromises);
+}
+
+async function fetchStudentIdsFromGroup(
+  teacherGroupId: string,
+  container: string[]
+) {
+  const studentGroupQuery = query(
+    STUDENT_GROUP_COLLECTION,
+    where("teacherGroupIDs", "array-contains", teacherGroupId)
+  );
+  const studentGroupSnapshot = await getDocs(studentGroupQuery);
+
+  const promises = studentGroupSnapshot.docs.map(async (studentGroupDoc) => {
+    if (studentGroupDoc.exists()) {
+      const { studentIDs } = studentGroupDoc.data() as IStudentGroup;
+      container.push(...studentIDs);
+    }
+  });
+
+  await Promise.all(promises);
+}
+
+async function fetchStudentIdsFromCollection(container: string[]) {
+  const snapshot = await getDocs(STUDENT_COLLECTION);
+
+  snapshot.forEach(async (doc) => {
+    if (doc.exists()) container.push(doc.id);
+  });
 }

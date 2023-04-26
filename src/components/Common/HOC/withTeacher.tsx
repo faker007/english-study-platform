@@ -9,6 +9,7 @@ const withTeacher = <P extends object>(WrappedComponent: ComponentType<P>) => {
 
     useEffect(() => {
       if (!isLoading && !user) {
+        alert("유저 정보가 없습니다.");
         navigate("/login");
       }
 

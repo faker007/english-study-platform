@@ -10,6 +10,7 @@ const withAdmin = <T extends object>(Component: ComponentType<T>) => {
 
     useEffect(() => {
       if (!isLoading && !user) {
+        alert("유저 정보가 없습니다.");
         return navigate("/login");
       }
 
