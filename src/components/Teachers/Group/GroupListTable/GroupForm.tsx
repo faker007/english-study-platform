@@ -37,8 +37,8 @@ function GroupForm() {
           alert("중복 되는 그룹명 입니다.");
         } else {
           await createTeacherGroup(groupName);
-          setIsRefetch(true);
           alert("그룹 생성 완료!");
+          setIsRefetch(true);
         }
       } catch (error) {
         console.error(error);

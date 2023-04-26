@@ -7,8 +7,11 @@ import { MIN_PAGE } from "../../constants/Students";
 import AdminControlPanel from "../../components/Students/List/AdminControlPanel";
 import { IFilterProps } from "../../types/Students";
 import useStudentGroupList from "../../hooks/useStudentGroupList";
+import useUser from "../../hooks/useUser";
+import { isAdmin } from "../../api/utils/teacher";
 
 export default function StudentList() {
+  const { user } = useUser();
   const [page, setPage] = useState(MIN_PAGE);
   const [filterOptions, setFilterOptions] = useState<IFilterProps>({
     group: null,
@@ -43,7 +46,7 @@ export default function StudentList() {
             하면 됩니다.
           </span>
 
-          <AdminControlPanel />
+          {isAdmin(user) && <AdminControlPanel />}
         </div>
         <UserListTable isLoading={isLoading} students={students} page={page} />
       </section>

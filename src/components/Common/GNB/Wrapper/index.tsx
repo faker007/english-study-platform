@@ -15,9 +15,13 @@ export default function GNBWrapper() {
     }
   }, [user, navigate]);
 
+  if (!user) {
+    return <></>;
+  }
+
   return (
     <>
-      <GNB role="TEACHER" />
+      <GNB role={user.role} />
       <Outlet />
     </>
   );

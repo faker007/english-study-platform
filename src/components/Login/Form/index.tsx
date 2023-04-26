@@ -168,6 +168,9 @@ async function handleLogin({
   );
   await updateUserRecentLoginTime(data, role);
   alert(`환영합니다 ${data.accountId}님`);
-  navigate("/students/list");
+
+  if (data.role === "STUDENT") navigate("/");
+  else navigate("/students/list");
+
   setUser(data);
 }

@@ -92,8 +92,6 @@ export default function ModalContent({
         new Set([...groupData.teacherIDs, teacher.id])
       );
 
-      console.log(teacherIDs, ":TEACHER_IDS");
-
       await updateDoc(groupDoc, { teacherIDs });
     }
   }

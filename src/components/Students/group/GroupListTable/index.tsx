@@ -3,6 +3,8 @@ import Spinner from "../../../Common/Spinner";
 import { IStudentGroup } from "../../../../api/models";
 import { PAGE_PER } from "../../../../constants/Students";
 import GroupForm from "./GroupForm";
+import useUser from "../../../../hooks/useUser";
+import { isAdmin } from "../../../../api/utils/teacher";
 
 interface IProps {
   isLoading: boolean;
@@ -11,6 +13,7 @@ interface IProps {
 }
 
 export default function GroupListTable({ isLoading, groups, page }: IProps) {
+  const { user } = useUser();
   const currentPageGroups = groups.slice(
     PAGE_PER * page - PAGE_PER,
     PAGE_PER * page
@@ -48,7 +51,7 @@ export default function GroupListTable({ isLoading, groups, page }: IProps) {
             </div>
           ) : (
             <>
-              <GroupForm />
+              {isAdmin(user) && <GroupForm />}
               {currentPageGroups.map((group, i) => (
                 <TableItem key={group.id} index={i + 1} currentGroup={group} />
               ))}

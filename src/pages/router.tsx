@@ -15,6 +15,13 @@ export interface IToken {
 }
 
 function Router() {
+  usePersistUser();
+  return <Outlet />;
+}
+
+export default Router;
+
+function usePersistUser() {
   const navigate = useNavigate();
   const setUser = useSetRecoilState(userState);
 
@@ -47,11 +54,7 @@ function Router() {
   useLayoutEffect(() => {
     handleUser();
   }, [handleUser]);
-
-  return <Outlet />;
 }
-
-export default Router;
 
 async function checkUserInfoModified(role: TUserRole, data: IUser) {
   try {

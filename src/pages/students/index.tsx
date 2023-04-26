@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import withTeacher from "../../components/Common/HOC/withTeacher";
 
-export default function Students() {
+function Students() {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -15,3 +16,5 @@ export default function Students() {
 
   return <Outlet />;
 }
+
+export default withTeacher(Students);

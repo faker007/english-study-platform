@@ -12,14 +12,19 @@ import LNBList from "../LNBList";
 import { useLocation } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { activeMenuState } from "../../../../stores/LNB";
+import useUser from "../../../../hooks/useUser";
+import { isTeacher } from "../../../../api/utils/teacher";
 
 export default function TeacherMenu() {
+  const { user } = useUser();
   const [activeMenu, setActiveMenu] = useRecoilState(activeMenuState);
   const location = useLocation();
 
   function handleActiveMenu(menu: TeacherMenuItems) {
     setActiveMenu(menu);
   }
+
+  const isAdmin = user && isTeacher(user) && user.isAdmin;
 
   return (
     <div>
@@ -74,19 +79,21 @@ export default function TeacherMenu() {
               <LNBList data={REFERENCE_LNB_ITEMS} />
             )}
           </li>
-          <li
-            onMouseEnter={() => handleActiveMenu("TEACHER_MANAGE")}
-            className="relative h-full"
-          >
-            <GNBLink
-              text="강사 관리"
-              url="/teachers"
-              active={location.pathname.includes("teachers")}
-            />
-            {activeMenu === "TEACHER_MANAGE" && (
-              <LNBList data={TEACHER_MANAGE_LNB_ITEMS} />
-            )}
-          </li>
+          {isAdmin && (
+            <li
+              onMouseEnter={() => handleActiveMenu("TEACHER_MANAGE")}
+              className="relative h-full"
+            >
+              <GNBLink
+                text="강사 관리"
+                url="/teachers"
+                active={location.pathname.includes("teachers")}
+              />
+              {activeMenu === "TEACHER_MANAGE" && (
+                <LNBList data={TEACHER_MANAGE_LNB_ITEMS} />
+              )}
+            </li>
+          )}
         </ul>
       </section>
       <section className="h-[50px] w-full border-b border-[#6f6f6f] bg-[#f2f2f2]" />

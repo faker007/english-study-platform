@@ -121,12 +121,14 @@ export default function ModalContent({
         name,
       });
 
-      if (ok && docId) {
+      if (ok && docId && groupId) {
         await Promise.all([
           updateGroupIdFromTeacher({ groupId, teacherId: docId }),
           updateTeacherIdsFromTeacherGroup({ groupId, teacherId: docId }),
         ]);
       }
+
+      console.log(ok, ":OK");
 
       if (ok) {
         alert("유저 생성 완료.");

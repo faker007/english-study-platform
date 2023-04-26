@@ -4,6 +4,8 @@ import UpdateStudentButton from "./UpdateStudentButton";
 import UnLockUserButton from "./UnLockUserButton";
 import DeleteStudentButton from "./DeleteStudentButton";
 import DashBoardButton from "./DashBoardButton";
+import useUser from "../../../../hooks/useUser";
+import { isAdmin } from "../../../../api/utils/teacher";
 
 interface IProps {
   index: number;
@@ -27,6 +29,8 @@ export default function TableItem({
   docId,
   groupIDs,
 }: IProps) {
+  const { user } = useUser();
+
   return (
     <>
       <tr>
@@ -56,28 +60,34 @@ export default function TableItem({
           {isEnabled ? "사용" : "정지"}
         </td>
         <td className="h-[50px] space-x-[5px] break-all border-b border-[#e5e5e5] text-center text-[14px] text-[#666]">
-          <DashBoardButton
-            accountId={accountId}
-            name={name}
-            phoneNumber={phoneNumber}
-          />
-          <UpdateStudentButton
-            accountId={accountId}
-            docId={docId}
-            isEnabled={isEnabled}
-            name={name}
-            phoneNumber={phoneNumber}
-          />
-          <GroupConnectButton
-            accountId={accountId}
-            docId={docId}
-            isEnabled={isEnabled}
-            name={name}
-            phoneNumber={phoneNumber}
-            groupIDs={groupIDs}
-          />
+          {isAdmin(user) && (
+            <>
+              <DashBoardButton
+                accountId={accountId}
+                name={name}
+                phoneNumber={phoneNumber}
+              />
+              <UpdateStudentButton
+                accountId={accountId}
+                docId={docId}
+                isEnabled={isEnabled}
+                name={name}
+                phoneNumber={phoneNumber}
+              />
+              <GroupConnectButton
+                accountId={accountId}
+                docId={docId}
+                isEnabled={isEnabled}
+                name={name}
+                phoneNumber={phoneNumber}
+                groupIDs={groupIDs}
+              />
+            </>
+          )}
           <UnLockUserButton studentId={docId} accountId={accountId} />
-          <DeleteStudentButton studentId={docId} groupIDs={groupIDs} />
+          {isAdmin(user) && (
+            <DeleteStudentButton studentId={docId} groupIDs={groupIDs} />
+          )}
         </td>
       </tr>
     </>
