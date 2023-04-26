@@ -8,4 +8,5 @@ export type TeacherMenuItems =
   | "PROBLEM_BANK"
   | "TEST_MANAGE"
   | "ESSAY_MANAGE"
-  | "REFERENCE";
+  | "REFERENCE"
+  | "TEACHER_MANAGE";
