@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { DEFAULT_IMAGE_DIR } from "../../../../constants";
 import { MIN_PAGE } from "../../../../constants/Students";
 import Page from "./page";
@@ -8,7 +9,11 @@ interface IProps {
   setPage: React.Dispatch<React.SetStateAction<number>>;
 }
 
+const MAXIMUM_PAGES_COLUMNS = 10;
+
 export default function Pages({ lastPage, page, setPage }: IProps) {
+  const [tens, setTens] = useState(0);
+
   function handleClickPrevPage() {
     setPage((prev) => {
       return Math.max(MIN_PAGE, prev - 1);
@@ -26,6 +31,16 @@ export default function Pages({ lastPage, page, setPage }: IProps) {
   function handleClickLastPage() {
     setPage(lastPage);
   }
+
+  useEffect(() => {
+    const tens =
+      page % MAXIMUM_PAGES_COLUMNS
+        ? Math.floor(page / MAXIMUM_PAGES_COLUMNS)
+        : Math.floor(page / MAXIMUM_PAGES_COLUMNS) - 1;
+    setTens(tens);
+  }, [page]);
+
+  console.log(page, tens, lastPage);
 
   return (
     <div className="flex items-center gap-[28px]">
@@ -48,11 +63,16 @@ export default function Pages({ lastPage, page, setPage }: IProps) {
         ></button>
       </nav>
       <main className="flex items-center gap-[1px]">
-        {Array.from({ length: lastPage }).map((_, i) => (
-          <div key={i + 1} onClick={() => setPage(i + 1)}>
-            <Page value={i + 1} active={i + 1 === page} />
-          </div>
-        ))}
+        {Array.from({
+          length: Math.min(MAXIMUM_PAGES_COLUMNS, lastPage - 10 * tens),
+        }).map((_, i) => {
+          const pageValue = 10 * tens + (i + 1);
+          return (
+            <div key={pageValue} onClick={() => setPage(pageValue)}>
+              <Page value={pageValue} active={pageValue === page} />
+            </div>
+          );
+        })}
       </main>
       <nav className="space-x-[5px]">
         <button
