@@ -1,6 +1,7 @@
 // TODO: [ O ] 2023-04-22 12:47 -> 문제 세트의 Doc id를 물고, Modal open 하기, 사유: 그래야, 문제 세트와 지문을 1:1로 대응할 수 있음.
 // TODO: [ X ] 2023-04-22 12:57 -> 지문 목록(jimuns)의 Doc id을 물고, 문제 목록에서 문제 추가할 수 있도록 구현.
 // TODO: [ X ] 2023-04-22 12:57 -> 지문 목록(jimuns)의 Doc id을 물고, 수정할 수 있도록 구현.
+// TODO: [ ] 2023-05-21 10:17 -> problemSet에서 latestOrder를 통해서, "아래로", "위로" 정렬할 수 있도록 구현
 
 /** 문제 세트 */
 import React, { useEffect, useRef, useState } from "react";
@@ -24,7 +25,6 @@ export default function ProblemBank() {
     setIsOpen((prev) => !prev);
   }
 
-  // TODO: Extract this function as a hook
   const 신규_등록 = async () => {
     if (!problemSetName) {
       return alert("문제 세트 명을 등록 해주세요");
@@ -36,11 +36,22 @@ export default function ProblemBank() {
       const result = await addDoc(problemSetCF, {
         problemSetName: problemSetName,
         length: 0,
+        latestOrder: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
-      console.log(result);
+      try {
+        데이터_가져오기();
+
+        alert("신규 등록에 성공 했습니다!");
+      } catch (err) {
+        alert("신규 등록에 실패 했습니다!");
+      }
     } catch (err) {
       console.log(err);
+
+      alert("신규 등록에 실패 했습니다!");
     }
   };
 
@@ -110,7 +121,6 @@ export default function ProblemBank() {
                 value={problemSetName}
                 onChange={(e) => {
                   setProblemSetName(e.target.value);
-                  console.log(e.target.value);
                 }}
               />
             </td>
@@ -150,25 +160,77 @@ export default function ProblemBank() {
                 <td>{problemSet?.length ?? "-"}</td>
 
                 <td>
-                  <button
+                  <div
                     style={{
-                      width: 76,
-                      height: 30,
-                      backgroundColor: "#fff",
-                      border: "1px solid #d9d9d9",
-                      fontSize: 13,
-                      textAlign: "center",
-                      cursor: "pointer",
-                      borderRadius: 6,
-                    }}
-                    onClick={() => {
-                      setCurrentDocId(problemSet.id);
-
-                      문제_편집_모달_토글();
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    문제 편집
-                  </button>
+                    <button
+                      style={{
+                        width: 76,
+                        height: 30,
+                        backgroundColor: "#fff",
+                        border: "1px solid #d9d9d9",
+                        fontSize: 13,
+                        textAlign: "center",
+                        cursor: "pointer",
+                        borderRadius: 6,
+                      }}
+                      onClick={() => {
+                        setCurrentDocId(problemSet.id);
+
+                        문제_편집_모달_토글();
+                      }}
+                    >
+                      문제 편집
+                    </button>
+
+                    <Spacer width={10} />
+
+                    <button
+                      style={{
+                        width: 76,
+                        height: 30,
+                        backgroundColor: "#fff",
+                        border: "1px solid #d9d9d9",
+                        fontSize: 13,
+                        textAlign: "center",
+                        cursor: "pointer",
+                        borderRadius: 6,
+                      }}
+                      onClick={() => {
+                        setCurrentDocId(problemSet.id);
+
+                        문제_편집_모달_토글();
+                      }}
+                    >
+                      세트명 편집
+                    </button>
+
+                    <Spacer width={10} />
+
+                    <button
+                      style={{
+                        width: 76,
+                        height: 30,
+                        backgroundColor: "#fff",
+                        border: "1px solid #d9d9d9",
+                        fontSize: 13,
+                        textAlign: "center",
+                        cursor: "pointer",
+                        borderRadius: 6,
+                      }}
+                      onClick={() => {
+                        setCurrentDocId(problemSet.id);
+
+                        문제_편집_모달_토글();
+                      }}
+                    >
+                      세트 삭제
+                    </button>
+                  </div>
                 </td>
               </tr>
             );
@@ -194,7 +256,7 @@ function ModalComponent({
   const [isJimun, setIsJimin] = useState(true); // true: 지문 추가, false: 문제 추가
   // const quillRef = useRef(null);
 
-  // TODO: 지문_추가
+  // NOTE: 이 앱에서는 지문_추가가 기본 옵션임.
   const 지문_추가 = async () => {};
 
   const 지문_추가_저장 = async () => {
@@ -230,16 +292,34 @@ function ModalComponent({
     }
   };
 
-  // TODO: 지문_없음_추가
-  const 지문_없음_추가 = async () => {};
+  const 지문_없음_추가 = async () => {
+    const jimunSetCF = collection(db, "jimuns");
 
-  // TODO: 새로 고침
-  const 새로_고침 = async () => {};
+    if (!currentDocId) {
+      return alert(
+        "세트명 아이디를 가져올 수 없습니다. 새로고침 후 다시 시도해주세요."
+      );
+    }
+
+    try {
+      const result = await addDoc(jimunSetCF, {
+        title: "(지문 없음)",
+        quillContent: "",
+        length: 0,
+        currentDocId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      console.log(result);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   // TODO: 문제 추가
   const 문제_추가 = async () => {
     // TODO: react-quill 초기화
-
     setIsJimin(true);
 
     setIsShowQuill(!isShowQuill);
@@ -281,19 +361,13 @@ function ModalComponent({
           <span className="text-2xl font-medium">지문 목록</span>
 
           <button
-            onClick={toggleOpen}
-            className="rounded-md bg-rose-500 px-5 py-2 text-white"
-          >
-            지문 추가
-          </button>
-          <button
-            onClick={toggleOpen}
+            onClick={지문_없음_추가}
             className="rounded-md bg-rose-500 px-5 py-2 text-white"
           >
             지문 없음 추가
           </button>
           <button
-            onClick={toggleOpen}
+            onClick={데이터_가져오기}
             className="rounded-md bg-rose-500 px-5 py-2 text-white"
           >
             새로 고침
@@ -328,7 +402,8 @@ function ModalComponent({
                     </td>
                     <td>{jimun.length ?? "0"}</td>
                     <td>
-                      <button
+                      {/* TODO: 필요하다면, 수정 추가 */}
+                      {/* <button
                         style={{
                           width: 76,
                           height: 30,
@@ -342,7 +417,7 @@ function ModalComponent({
                         onClick={() => {}}
                       >
                         수정
-                      </button>
+                      </button> */}
                       <button
                         style={{
                           width: 76,
@@ -358,6 +433,7 @@ function ModalComponent({
                       >
                         삭제
                       </button>
+
                       <button
                         style={{
                           width: 76,
