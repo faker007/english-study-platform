@@ -1,6 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
+import "./customCSS.css";
+
 import App from "./App";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import GNBWrapper from "./components/Common/GNB/Wrapper";
@@ -15,6 +17,9 @@ import { LOCALSTORAGE_USER_TOKEN } from "./constants/Login";
 import Teachers from "./pages/teachers";
 import TeacherList from "./pages/teachers/list";
 import TeacherGroup from "./pages/teachers/group";
+
+/** Own pages */
+import ProblemBank from "./pages/ProblemBank";
 
 const router = createBrowserRouter([
   {
@@ -46,6 +51,10 @@ const router = createBrowserRouter([
       },
       { path: "/login", element: <Login /> },
     ],
+  },
+  {
+    path: "/problem-bank",
+    element: <ProblemBank />,
   },
 ]);
 
