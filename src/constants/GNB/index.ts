@@ -1,9 +1,9 @@
 import { ILNBItem } from "../../types/GNB";
 
 export const STUDENT_MANAGE_LNB_ITEMS: ILNBItem[] = [
-  { text: "학생 정보", url: "#" },
-  { text: "학생 그룹", url: "#" },
-  { text: "출석부", url: "#" },
+  { text: "학생 정보", url: "/students/list" },
+  { text: "학생 그룹", url: "/students/group" },
+  // { text: "출석부", url: "#" },
 ];
 
 export const PROBLEM_BANK_LNB_ITEMS: ILNBItem[] = [
@@ -31,4 +31,9 @@ export const ESSAY_MANAGE_LNB_ITEMS: ILNBItem[] = [
 export const REFERENCE_LNB_ITEMS: ILNBItem[] = [
   { text: "강사 자료실", url: "#" },
   { text: "수업 자료실", url: "#" },
+];
+
+export const TEACHER_MANAGE_LNB_ITEMS: ILNBItem[] = [
+  { text: "강사 계정", url: "/teachers/list" },
+  { text: "강사 그룹", url: "/teachers/group" },
 ];

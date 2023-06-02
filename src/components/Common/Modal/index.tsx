@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 export interface IModalContentArgs {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export default function Modal({
   console.log(children({ isOpen, toggleOpen }));
 
   return (
+  const Content = (
     <div
       onClick={toggleOpen}
       className="fixed inset-0 z-[99] flex items-center justify-center bg-black bg-opacity-50"
@@ -51,4 +53,6 @@ export default function Modal({
       </main>
     </div>
   );
+
+  return createPortal(Content, document.body);
 }
