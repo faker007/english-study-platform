@@ -47,7 +47,7 @@ export default function TeacherMenu() {
             onMouseEnter={() => handleActiveMenu("PROBLEM_BANK")}
             className="relative h-full"
           >
-            <GNBLink text="문제 은행" url="#" />
+            <GNBLink text="문제 은행" url="problem-bank" />
             {activeMenu === "PROBLEM_BANK" && (
               <LNBList data={PROBLEM_BANK_LNB_ITEMS} />
             )}
