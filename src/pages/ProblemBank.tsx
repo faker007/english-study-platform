@@ -11,9 +11,8 @@ import Modal, { IModalContentArgs } from "../components/Common/Modal";
 import { db } from "../firebase";
 import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
 
-import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import EditorToolbar, { modules, formats } from "../components/EditorToolbar";
+import QuillEditor from "../components/QuillEditor";
 
 export default function ProblemBank() {
   const [problemSetName, setProblemSetName] = useState("");
@@ -254,7 +253,6 @@ function ModalComponent({
   const [quillContent, setQuillContent] = useState("");
   const [jimuns, setJimuns] = useState([]);
   const [isJimun, setIsJimin] = useState(true); // true: 지문 추가, false: 문제 추가
-  // const quillRef = useRef(null);
 
   // NOTE: 이 앱에서는 지문_추가가 기본 옵션임.
   const 지문_추가 = async () => {};
@@ -541,17 +539,7 @@ function ModalComponent({
           </div>
 
           <div className="text-editor">
-            <EditorToolbar />
-
-            <ReactQuill
-              style={{ width: "100%", height: 500 }}
-              onChange={(value) => {
-                setQuillContent(value);
-              }}
-              value={quillContent}
-              modules={modules}
-              formats={formats}
-            />
+            <QuillEditor />
           </div>
 
           <button
@@ -605,17 +593,7 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
       </div>
 
       <div className="text-editor">
-        <EditorToolbar />
-
-        <ReactQuill
-          style={{ width: "100%", height: 500 }}
-          onChange={(value) => {
-            setQuillContent(value);
-          }}
-          value={quillContent}
-          modules={modules}
-          formats={formats}
-        />
+        <QuillEditor />
       </div>
 
       <Spacer height={50} />
@@ -634,6 +612,7 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
         <div className="flex flex-col">
           <input type={"text"} />
           <input type={"text"} />
+
           {/* 응답 유형 */}
           <div className="flex">
             {["단일 선택", "복수 선택", "단답형"].map((value, i) => {
