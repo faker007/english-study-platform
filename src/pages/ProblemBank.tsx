@@ -4,7 +4,7 @@
 // TODO: [ ] 2023-05-21 10:17 -> problemSet에서 latestOrder를 통해서, "아래로", "위로" 정렬할 수 있도록 구현
 
 /** 문제 세트 */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Spacer from "../components/Common/Spacer";
 import Modal, { IModalContentArgs } from "../components/Common/Modal";
 
@@ -13,6 +13,8 @@ import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
 
 import "react-quill/dist/quill.snow.css";
 import QuillEditor from "../components/QuillEditor";
+import { useRecoilState } from "recoil";
+import { quillValue } from "../stores/problem";
 
 export default function ProblemBank() {
   const [problemSetName, setProblemSetName] = useState("");
@@ -123,7 +125,9 @@ export default function ProblemBank() {
                 }}
               />
             </td>
+
             <td>-</td>
+
             <td>
               <button
                 style={{
@@ -250,7 +254,7 @@ function ModalComponent({
 }: IModalContentArgs & { currentDocId: string }) {
   const [title, setTitle] = useState("");
   const [isShowQuill, setIsShowQuill] = useState(false);
-  const [quillContent, setQuillContent] = useState("");
+  const [quillContent, setQuillContent] = useRecoilState(quillValue);
   const [jimuns, setJimuns] = useState([]);
   const [isJimun, setIsJimin] = useState(true); // true: 지문 추가, false: 문제 추가
 

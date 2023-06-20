@@ -2,11 +2,14 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import React, { useMemo, useRef, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { useRecoilState } from "recoil";
 import { storage } from "../firebase";
+import { quillValue } from "../stores/problem";
 
 export default function QuillEditor() {
   const [html, setHtml] = useState("");
   const quillRef = useRef(null);
+  const [quillContent, setQuillContent] = useRecoilState(quillValue);
 
   const imageHandler = () => {
     const input = document.createElement("input");
@@ -82,11 +85,13 @@ export default function QuillEditor() {
   return (
     <ReactQuill
       ref={quillRef}
-      onChange={setHtml}
+      onChange={(e) => {
+        setQuillContent(e);
+      }}
       style={{ width: "100%", height: 500 }}
       modules={modules}
       formats={formats}
-      value={html}
+      value={quillContent}
       placeholder={""}
       theme="snow"
     />
