@@ -7,7 +7,7 @@ export const STUDENT_MANAGE_LNB_ITEMS: ILNBItem[] = [
 ];
 
 export const PROBLEM_BANK_LNB_ITEMS: ILNBItem[] = [
-  { text: "문제 세트", url: "#" },
+  { text: "문제 세트", url: "/problem-bank" },
   { text: "지문 검색/수정", url: "#" },
   { text: "문제 검색/수정", url: "#" },
   { text: "문제 유형", url: "#" },

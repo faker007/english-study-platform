@@ -1,8 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore"
-import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-
+import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 const firebaseConfig = {
   apiKey: "AIzaSyCaR39WZAPFqhxDooT9NR5LWf9GqPNlWQI",
   authDomain: "english-study-platform.firebaseapp.com",
@@ -16,3 +15,4 @@ export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const fbAuth = getAuth(app);
 export const fbStore = getFirestore(app);
+export const storage = getStorage(app);
