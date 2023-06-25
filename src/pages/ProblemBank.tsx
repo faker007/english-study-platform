@@ -42,7 +42,7 @@ export default function ProblemBank() {
     const problemSetCF = collection(db, "problemSet");
 
     try {
-      const result = await addDoc(problemSetCF, {
+      await addDoc(problemSetCF, {
         problemSetName: problemSetName,
         length: 0,
         latestOrder: 0,
@@ -119,9 +119,11 @@ export default function ProblemBank() {
           <th scope="col">문제수</th>
           <th scope="col">실행</th>
         </thead>
+
         <tbody>
           <tr>
             <td>-</td>
+
             <td>
               <input
                 type="text"
@@ -392,19 +394,21 @@ function ModalComponent({
               <th scope="col">문제 수</th>
               <th scope="col">실행</th>
             </thead>
+
             <tbody>
-              {jimuns?.map((jimun: any) => {
+              {jimuns?.map((jimun: any, index: number) => {
                 return (
-                  <tr
-                    onClick={() => {
-                      setQuillContent(
-                        jimun.quillContent ?? "<p>No content</p>"
-                      );
-                    }}
-                    style={{ cursor: "pointer" }}
-                  >
+                  <tr>
                     <td>
-                      <input type="radio" />
+                      <input
+                        name="jimun"
+                        type="radio"
+                        onClick={() => {
+                          setQuillContent(
+                            jimun.quillContent ?? "<p>No content</p>"
+                          );
+                        }}
+                      />
                     </td>
 
                     <td>
@@ -413,22 +417,6 @@ function ModalComponent({
                     <td>{jimun.length ?? "0"}</td>
 
                     <td>
-                      {/* TODO: 필요하다면, 수정 추가 */}
-                      {/* <button
-                        style={{
-                          width: 76,
-                          height: 30,
-                          backgroundColor: "#fff",
-                          border: "1px solid #d9d9d9",
-                          fontSize: 13,
-                          textAlign: "center",
-                          cursor: "pointer",
-                          borderRadius: 6,
-                        }}
-                        onClick={() => {}}
-                      >
-                        수정
-                      </button> */}
                       <button
                         style={{
                           width: 76,
@@ -447,6 +435,8 @@ function ModalComponent({
                             }
 
                             await deleteDoc(doc(db, "jimuns", jimun.id));
+
+                            await 데이터_가져오기();
                           } catch (err) {
                             console.error(
                               "When you delete jimun, there is some problem"
