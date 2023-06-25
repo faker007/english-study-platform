@@ -36,8 +36,6 @@ export default function Modal({
     return <></>;
   }
 
-  console.log(children({ isOpen, toggleOpen }));
-
   const Content = (
     <div
       onClick={toggleOpen}
