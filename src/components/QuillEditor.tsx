@@ -1,5 +1,5 @@
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useRecoilState } from "recoil";
@@ -7,7 +7,6 @@ import { storage } from "../firebase";
 import { quillValue } from "../stores/problem";
 
 export default function QuillEditor() {
-  const [html, setHtml] = useState("");
   const quillRef = useRef(null);
   const [quillContent, setQuillContent] = useRecoilState(quillValue);
 
