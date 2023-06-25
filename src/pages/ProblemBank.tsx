@@ -820,10 +820,15 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
       }
     } else {
       // NOTE: 문제 수정
-      const problemInfoDoc = doc(db, "problemInfo", currentFocusedProblemDocId);
+      const problemInfoDocRef = doc(
+        db,
+        "problemInfo",
+        currentFocusedProblemDocId
+      );
+      const problemInfoDoc = getDoc(problemInfoDocRef);
 
       try {
-        const result = await updateDoc(problemInfoDoc, {
+        const result = await updateDoc(problemInfoDocRef, {
           quillContent,
           responseType, // 응답 유형<string>
           symbolType: Number(symbolType), // 기호 유형<number>
@@ -831,6 +836,7 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
           score: Number(score), // 배점<number>
           problemType: 0, // TODO: Do not hard-coded here
           connectedJimunId,
+          createdAt: (await problemInfoDoc).data()?.createdAt ?? new Date(),
           updatedAt: new Date(),
         });
 
