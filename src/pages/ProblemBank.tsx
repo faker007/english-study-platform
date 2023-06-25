@@ -9,7 +9,15 @@ import Spacer from "../components/Common/Spacer";
 import Modal, { IModalContentArgs } from "../components/Common/Modal";
 
 import { db } from "../firebase";
-import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  query,
+  where,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 
 import "react-quill/dist/quill.snow.css";
 import QuillEditor from "../components/QuillEditor";
@@ -389,7 +397,6 @@ function ModalComponent({
                 return (
                   <tr
                     onClick={() => {
-                      console.log(jimun.quillContent);
                       setQuillContent(
                         jimun.quillContent ?? "<p>No content</p>"
                       );
@@ -399,10 +406,12 @@ function ModalComponent({
                     <td>
                       <input type="radio" />
                     </td>
+
                     <td>
                       <p>{jimun.title}</p>
                     </td>
                     <td>{jimun.length ?? "0"}</td>
+
                     <td>
                       {/* TODO: 필요하다면, 수정 추가 */}
                       {/* <button
@@ -431,7 +440,21 @@ function ModalComponent({
                           cursor: "pointer",
                           borderRadius: 6,
                         }}
-                        onClick={() => {}}
+                        onClick={async () => {
+                          try {
+                            if (!jimun.id) {
+                              throw Error("No jimun.id");
+                            }
+
+                            await deleteDoc(doc(db, "jimuns", jimun.id));
+                          } catch (err) {
+                            console.error(
+                              "When you delete jimun, there is some problem"
+                            );
+                            console.error(err);
+                          }
+                          console.log(jimun);
+                        }}
                       >
                         삭제
                       </button>
