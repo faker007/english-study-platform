@@ -1,27 +1,35 @@
-// TODO: [ O ] 2023-04-22 12:47 -> 문제 세트의 Doc id를 물고, Modal open 하기, 사유: 그래야, 문제 세트와 지문을 1:1로 대응할 수 있음.
-// TODO: [ X ] 2023-04-22 12:57 -> 지문 목록(jimuns)의 Doc id을 물고, 문제 목록에서 문제 추가할 수 있도록 구현.
-// TODO: [ X ] 2023-04-22 12:57 -> 지문 목록(jimuns)의 Doc id을 물고, 수정할 수 있도록 구현.
 // TODO: [ ] 2023-05-21 10:17 -> problemSet에서 latestOrder를 통해서, "아래로", "위로" 정렬할 수 있도록 구현
 
-/** 문제 세트 */
-import React, { useEffect, useState } from "react";
-import Spacer from "../components/Common/Spacer";
-import Modal, { IModalContentArgs } from "../components/Common/Modal";
+import "react-quill/dist/quill.snow.css";
 
-import { db } from "../firebase";
 import {
-  collection,
-  getDocs,
   addDoc,
-  query,
-  where,
+  collection,
   deleteDoc,
   doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
 } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+/** 문제 세트 */
+import React, { useEffect, useState } from "react";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 
-import "react-quill/dist/quill.snow.css";
+import Modal, { IModalContentArgs } from "../components/Common/Modal";
+import Spacer from "../components/Common/Spacer";
 import QuillEditor from "../components/QuillEditor";
-import { useRecoilState } from "recoil";
+import { db, storage } from "../firebase";
+import {
+  currentFocusedJimunIdState,
+  currentFocusedProblemIdState,
+  problemCorrectAnswerState,
+  problemResponseTypeState,
+  problemScoreState,
+  problemSymbolTypeState,
+} from "../recoil";
 import { quillValue } from "../stores/problem";
 
 export default function ProblemBank() {
@@ -67,10 +75,6 @@ export default function ProblemBank() {
   const 문제_편집 = async () => {};
 
   const 문제_내용_확인 = async () => {};
-
-  const 세트명_변경 = async () => {};
-
-  const 세트_삭제 = async () => {};
 
   const 데이터_가져오기 = async () => {
     const tempArray: any = [];
@@ -264,12 +268,21 @@ function ModalComponent({
 }: IModalContentArgs & { currentDocId: string }) {
   const [title, setTitle] = useState("");
   const [isShowQuill, setIsShowQuill] = useState(false);
-  const [quillContent, setQuillContent] = useRecoilState(quillValue);
   const [jimuns, setJimuns] = useState([]);
+  const [problemInfos, setProblemInfos] = useState([]);
   const [isJimun, setIsJimin] = useState(true); // true: 지문 추가, false: 문제 추가
 
-  // NOTE: 이 앱에서는 지문_추가가 기본 옵션임.
-  const 지문_추가 = async () => {};
+  const [quillContent, setQuillContent] = useRecoilState(quillValue);
+  const [curentFocusedProblemDocId, setCurrentFocusedProblemDocId] =
+    useRecoilState(currentFocusedProblemIdState);
+  const [currentFocusedDocId, setCurrentFocusedDocId] = useRecoilState(
+    currentFocusedJimunIdState
+  );
+
+  const setProblemResponseType = useSetRecoilState(problemResponseTypeState);
+  const setProblemSymbol = useSetRecoilState(problemSymbolTypeState);
+  const setProblemCorrectAnswer = useSetRecoilState(problemCorrectAnswerState);
+  const setProblemScore = useSetRecoilState(problemScoreState);
 
   const 지문_추가_저장 = async () => {
     const jimunSetCF = collection(db, "jimuns");
@@ -331,14 +344,26 @@ function ModalComponent({
 
   // TODO: 문제 추가
   const 문제_추가 = async () => {
-    // TODO: react-quill 초기화
-    setIsJimin(true);
+    // TODO: Get Firestore Doc에 연결된 Id 가져오기
 
-    setIsShowQuill(!isShowQuill);
+    if (currentFocusedDocId) {
+      setIsShowQuill(true);
+
+      setQuillContent("");
+
+      setCurrentFocusedProblemDocId("");
+
+      setProblemResponseType("단일 선택");
+      setProblemSymbol("100");
+      setProblemCorrectAnswer("A");
+      setProblemScore("1");
+    } else {
+      alert("문제를 연결할 지문을 선택 해주세요");
+    }
+
+    // TODO: Check what does "setIsJimin"
+    // setIsJimin(true);
   };
-
-  // TODO: 해설 이미지 업로드 추가
-  const 해설_이미지_업로드 = async () => {};
 
   const 데이터_가져오기 = async () => {
     const tempArray: any = [];
@@ -348,16 +373,12 @@ function ModalComponent({
 
     jimunsDocs.forEach((jimunsDoc) => {
       tempArray.push({ id: jimunsDoc.id, ...jimunsDoc.data() });
-      console.log(jimunsDoc);
-      console.log(jimunsDoc.data());
     });
 
     setJimuns(tempArray);
   };
 
-  // TODO: 문제별_지문_설정
-  const 문제별_지문_설정 = async () => {};
-
+  // NOTE: 지문 목록 가져 오기
   useEffect(() => {
     const inner = async () => {
       데이터_가져오기();
@@ -365,6 +386,37 @@ function ModalComponent({
 
     inner();
   }, []);
+
+  // NOTE: 문제 목록 가져 오기
+  const 문제_목록_가져오기 = async () => {
+    if (currentFocusedDocId) {
+      const tempArray: any = [];
+
+      const problemInfoCF = collection(db, "problemInfo");
+      const q = query(
+        problemInfoCF,
+        where("connectedJimunId", "==", currentFocusedDocId)
+      );
+
+      const problemInfoDocs = await getDocs(q);
+
+      problemInfoDocs.forEach((probemInfoDoc) => {
+        tempArray.push({ id: probemInfoDoc.id, ...probemInfoDoc.data() });
+      });
+
+      setProblemInfos(tempArray);
+
+      console.log(tempArray);
+    }
+  };
+
+  useEffect(() => {
+    const inner = async () => {
+      문제_목록_가져오기();
+    };
+
+    inner();
+  }, [currentFocusedDocId]);
 
   return (
     <div className="flex">
@@ -404,9 +456,21 @@ function ModalComponent({
                         name="jimun"
                         type="radio"
                         onClick={() => {
+                          setIsShowQuill(false);
+
                           setQuillContent(
                             jimun.quillContent ?? "<p>No content</p>"
                           );
+
+                          if (jimun?.id) {
+                            setCurrentFocusedDocId(jimun.id);
+                          } else {
+                            alert(
+                              "When you clicked radio button, but there is no jimun.id"
+                            );
+
+                            alert("Ask the dev");
+                          }
                         }}
                       />
                     </td>
@@ -507,6 +571,116 @@ function ModalComponent({
             문제별 지문 설정
           </button>
         </div>
+
+        <table className="w-full">
+          <thead>
+            <th scope="col">선택</th>
+            <th scope="col">문제 유형</th>
+            <th scope="col">응답 유형</th>
+            <th scope="col">해시 태그</th>
+            <th scope="col">실행</th>
+          </thead>
+
+          <tbody>
+            {problemInfos?.map((problemInfo: any, index: number) => {
+              return (
+                <tr>
+                  <td>
+                    <input
+                      name="jimun"
+                      type="radio"
+                      onClick={() => {
+                        setIsShowQuill(true);
+
+                        setQuillContent(
+                          problemInfo.quillContent ?? "<p>No content</p>"
+                        );
+
+                        setCurrentFocusedProblemDocId(problemInfo.id);
+                      }}
+                    />
+                  </td>
+
+                  <td>
+                    <p>
+                      {problemInfo.problemType === 0 ? "(문제 유형 없음)" : ""}
+                    </p>
+                  </td>
+
+                  <td>{problemInfo.length ?? "0"}</td>
+
+                  <td>
+                    <button
+                      style={{
+                        width: 76,
+                        height: 30,
+                        backgroundColor: "#fff",
+                        border: "1px solid #d9d9d9",
+                        fontSize: 13,
+                        textAlign: "center",
+                        cursor: "pointer",
+                        borderRadius: 6,
+                      }}
+                      onClick={async () => {
+                        try {
+                          if (!problemInfo.id) {
+                            throw Error("No problemInfo.id");
+                          }
+
+                          await deleteDoc(
+                            doc(db, "problemInfo", problemInfo.id)
+                          );
+
+                          await 문제_목록_가져오기();
+                        } catch (err) {
+                          console.error(
+                            "When you delete jimun, there is some problem"
+                          );
+                          console.error(err);
+                        }
+                        console.log(problemInfo);
+                      }}
+                    >
+                      삭제
+                    </button>
+
+                    <button
+                      style={{
+                        width: 76,
+                        height: 30,
+                        backgroundColor: "#fff",
+                        border: "1px solid #d9d9d9",
+                        fontSize: 13,
+                        textAlign: "center",
+                        cursor: "pointer",
+                        borderRadius: 6,
+                      }}
+                      onClick={() => {}}
+                    >
+                      위로
+                    </button>
+
+                    <button
+                      style={{
+                        width: 76,
+                        height: 30,
+                        backgroundColor: "#fff",
+                        border: "1px solid #d9d9d9",
+                        fontSize: 13,
+                        textAlign: "center",
+                        cursor: "pointer",
+                        borderRadius: 6,
+                      }}
+                      onClick={() => {}}
+                    >
+                      아래로
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
       <Spacer width={10} />
@@ -573,11 +747,140 @@ function ModalComponent({
 
 /** 문제 추가 오른쪽 컴포넌트 */
 function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
-  const [selectedValue, setSelectedValue] = useState("단일 선택"); // 응답 유형 ("단일 선택", "복수 선택", "단답형")
-  const [selectedValue2, setSelectedValue2] = useState("100"); // 기호 유형 (100 ~ 700)
-  const [selectedValue3, setSelectedValue3] = useState("A"); // 정답 ("A", "B", "C", "D")
-  const [score, setScore] = useState(1); // 배점
-  const [quillContent, setQuillContent] = useState("");
+  const [image, setImage] = useState(""); // 해설 이미지 주소
+  const [responseType, setResponseType] = useRecoilState(
+    problemResponseTypeState
+  ); // 응답 유형 ("단일 선택", "복수 선택", "단답형")
+  const [symbolType, setSymbolType] = useRecoilState(problemSymbolTypeState); // 기호 유형 (100 ~ 700)
+  const [correctAnswer, setCorrectAnswer] = useRecoilState(
+    problemCorrectAnswerState
+  ); // 정답 ("A", "B", "C", "D")
+  const [score, setScore] = useRecoilState(problemScoreState); // 배점
+  const [hashTag, setHashTag] = useState("");
+  const [problemType, setProblemType] = useState(0);
+
+  const quillContent = useRecoilValue(quillValue);
+
+  const connectedJimunId = useRecoilValue(currentFocusedJimunIdState);
+  const [currentFocusedProblemDocId, setCurrentFocusedProblemDocId] =
+    useRecoilState(currentFocusedProblemIdState);
+  const [currentFocusedProblemDoc, setCurrentFocusedProblemDoc] = useState<any>(
+    {}
+  );
+
+  const 해설_이미지_업로드 = async (e) => {
+    // TODO: 해설_이미지가 업로드 완료 되었을 때, 미리 보기 보여주기
+
+    try {
+      const storageRef = ref(storage, `image/${Date.now()}`);
+
+      await uploadBytes(storageRef, e.target.files[0]).then((snapshot) => {
+        getDownloadURL(snapshot.ref)
+          .then((url) => {
+            alert("해설 이미지를 성공적으로 업로드 했습니다");
+
+            setImage(url);
+          })
+          .catch((err) => {
+            alert("해설 이미지 업로드에 실패 했습니다");
+          });
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const 문제_저장 = async () => {
+    const problemInfoCF = collection(db, "problemInfo");
+    // TODO: Delete console.log
+    console.log("currentFocusedProblemDocId: " + currentFocusedProblemDocId);
+
+    if (!currentFocusedProblemDocId) {
+      // NOTE: 문제 최초 저장
+      try {
+        const result = await addDoc(problemInfoCF, {
+          quillContent,
+          responseType, // 응답 유형<string>
+          symbolType: Number(symbolType), // 기호 유형<number>
+          correctAnswer, // 정답
+          score: Number(score), // 배점<number>
+          problemType: 0, // TODO: Do not hard-coded here
+          connectedJimunId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+
+        console.log(result);
+
+        alert("성공적으로 문제를 저장 했습니다.");
+      } catch (err) {
+        alert("문제 저장에 문제가 있습니다.");
+
+        console.log(err);
+      }
+    } else {
+      // NOTE: 문제 수정
+      const problemInfoDoc = doc(db, "problemInfo", currentFocusedProblemDocId);
+
+      try {
+        const result = await updateDoc(problemInfoDoc, {
+          quillContent,
+          responseType, // 응답 유형<string>
+          symbolType: Number(symbolType), // 기호 유형<number>
+          correctAnswer, // 정답
+          score: Number(score), // 배점<number>
+          problemType: 0, // TODO: Do not hard-coded here
+          connectedJimunId,
+          updatedAt: new Date(),
+        });
+
+        console.log(result);
+
+        alert("성공적으로 문제를 수정 했습니다.");
+      } catch (err) {
+        alert("문제 수정에 문제가 있습니다.");
+
+        console.log(err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const inner = async () => {
+      if (currentFocusedProblemDocId) {
+        const problemInfoDocRef = doc(
+          db,
+          "problemInfo",
+          currentFocusedProblemDocId
+        );
+        const problemInfoDoc = await getDoc(problemInfoDocRef);
+
+        setCurrentFocusedProblemDoc(problemInfoDoc.data());
+
+        console.log(problemInfoDoc.data());
+      }
+    };
+
+    inner();
+  }, [currentFocusedProblemDocId]);
+
+  useEffect(() => {
+    if (currentFocusedProblemDoc.responseType) {
+      setResponseType(currentFocusedProblemDoc.responseType);
+    }
+
+    if (currentFocusedProblemDoc.symbolType) {
+      setSymbolType(currentFocusedProblemDoc.symbolType + "");
+    }
+
+    if (currentFocusedProblemDoc.correctAnswer) {
+      setCorrectAnswer(currentFocusedProblemDoc.correctAnswer);
+    }
+
+    if (currentFocusedProblemDoc.score) {
+      setScore(currentFocusedProblemDoc.score);
+    }
+  }, [currentFocusedProblemDoc]);
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-white p-5">
@@ -593,20 +896,6 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
         <h1 style={{ fontSize: 24, fontWeight: 400 }}>
           {isJimun ? "문제 정보" : "문제 추가"}
         </h1>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          width: "100%",
-          height: 50,
-          borderBottomWidth: 3,
-          borderBottomColor: "black",
-          paddingLeft: 10,
-          paddingRight: 10,
-        }}
-      >
-        <h3>문제 정보</h3>
       </div>
 
       <div className="text-editor">
@@ -627,7 +916,7 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
         </div>
 
         <div className="flex flex-col">
-          <input type={"text"} />
+          <input type={"file"} onChange={해설_이미지_업로드} />
           <input type={"text"} />
 
           {/* 응답 유형 */}
@@ -636,14 +925,13 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
               return (
                 <>
                   <input
-                    id={"mondais" + i}
-                    name={"mondais" + i}
+                    id={"mondais"}
+                    name={"mondais"}
                     value={value}
                     type={"radio"}
-                    checked={selectedValue === value}
+                    checked={responseType === value}
                     onChange={(e) => {
-                      setSelectedValue(e.target.value);
-                      console.log(e.target.value);
+                      setResponseType(e.target.value);
                     }}
                   />
 
@@ -658,10 +946,10 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
           {/* 기호 유형 */}
           <select
             onChange={(e) => {
-              setSelectedValue2(e.target.value);
-
-              console.log(selectedValue2);
+              setSymbolType(e.target.value);
             }}
+            value={symbolType}
+            defaultValue={symbolType}
           >
             <option value="100">A, B, C, D</option>
             <option value="200">A, B, C, D, E</option>
@@ -682,10 +970,9 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
                     id={"correctAnswer" + i}
                     name={"correctAnswer" + i}
                     value={value}
-                    checked={selectedValue3 === value}
+                    checked={correctAnswer === value}
                     onChange={(e) => {
-                      console.log(e.target.value);
-                      setSelectedValue3(e.target.value);
+                      setCorrectAnswer(e.target.value);
                     }}
                   />
 
@@ -725,26 +1012,11 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
 
       <button
         onClick={async () => {
-          const problemInfoCF = collection(db, "problemInfo");
-
-          try {
-            const result = await addDoc(problemInfoCF, {
-              quillContent,
-              resType: selectedValue, // 응답 유형
-              typoType: Number(selectedValue2), // 기호 유형
-              correctAnswer: selectedValue3, // 정답
-              score: Number(score), // 배점
-              problemType: "(문제 유형 없음)", // TODO: Do not hard-coded here
-            });
-
-            console.log(result);
-          } catch (err) {
-            console.log(err);
-          }
+          await 문제_저장();
         }}
         className="rounded-md bg-rose-500 px-5 py-2 text-white"
       >
-        저장
+        {currentFocusedProblemDocId ? "수정" : "저장"}
       </button>
     </div>
   );
