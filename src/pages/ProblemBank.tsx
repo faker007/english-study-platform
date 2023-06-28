@@ -218,8 +218,6 @@ export default function ProblemBank() {
                         borderRadius: 6,
                       }}
                       onClick={() => {
-                        setCurrentDocId(problemSet.id);
-
                         문제_편집_모달_토글();
                       }}
                     >
@@ -239,10 +237,16 @@ export default function ProblemBank() {
                         cursor: "pointer",
                         borderRadius: 6,
                       }}
-                      onClick={() => {
-                        setCurrentDocId(problemSet.id);
+                      onClick={async () => {
+                        try {
+                          await deleteDoc(doc(db, "problemSet", problemSet.id));
 
-                        문제_편집_모달_토글();
+                          await 데이터_가져오기();
+
+                          alert("성공적으로 문제 세트를 지웠습니다");
+                        } catch (err) {
+                          alert("문제 세트를 삭제 하는데 문제가 있습니다.");
+                        }
                       }}
                     >
                       세트 삭제
@@ -326,8 +330,12 @@ function ModalComponent({
       );
     }
 
+    setCurrentFocusedDocId("");
+    setCurrentFocusedProblemDocId("");
+    setQuillContent("");
+
     try {
-      const result = await addDoc(jimunSetCF, {
+      await addDoc(jimunSetCF, {
         title: "(지문 없음)",
         quillContent: "",
         length: 0,
@@ -336,9 +344,10 @@ function ModalComponent({
         updatedAt: new Date(),
       });
 
-      console.log(result);
+      // 지문 데이터 가져오기
+      await 데이터_가져오기();
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -360,15 +369,12 @@ function ModalComponent({
     } else {
       alert("문제를 연결할 지문을 선택 해주세요");
     }
-
-    // TODO: Check what does "setIsJimin"
-    // setIsJimin(true);
   };
 
   const 데이터_가져오기 = async () => {
     const tempArray: any = [];
-    const jimunsCF = collection(db, "jimuns");
-    const q = query(jimunsCF, where("currentDocId", "==", currentDocId));
+    const jimunsRef = collection(db, "jimuns");
+    const q = query(jimunsRef, where("currentDocId", "==", currentDocId));
     const jimunsDocs = await getDocs(q);
 
     jimunsDocs.forEach((jimunsDoc) => {
@@ -377,6 +383,14 @@ function ModalComponent({
 
     setJimuns(tempArray);
   };
+
+  /**
+   * @description 지문 문제 갯수 렌더링
+   */
+  useEffect(() => {
+    if (!jimuns.length) {
+    }
+  }, [jimuns]);
 
   // NOTE: 지문 목록 가져 오기
   useEffect(() => {
@@ -389,9 +403,15 @@ function ModalComponent({
 
   // NOTE: 문제 목록 가져 오기
   const 문제_목록_가져오기 = async () => {
-    if (currentFocusedDocId) {
-      const tempArray: any = [];
+    const tempArray: any = [];
 
+    if (!currentFocusedDocId) {
+      setProblemInfos(tempArray);
+
+      return;
+    }
+
+    if (currentFocusedDocId) {
       const problemInfoCF = collection(db, "problemInfo");
       const q = query(
         problemInfoCF,
@@ -405,8 +425,6 @@ function ModalComponent({
       });
 
       setProblemInfos(tempArray);
-
-      console.log(tempArray);
     }
   };
 
@@ -449,6 +467,8 @@ function ModalComponent({
 
             <tbody>
               {jimuns?.map((jimun: any, index: number) => {
+                console.log(JSON.stringify(jimun, null, 2));
+
                 return (
                   <tr>
                     <td>
@@ -501,6 +521,10 @@ function ModalComponent({
                             await deleteDoc(doc(db, "jimuns", jimun.id));
 
                             await 데이터_가져오기();
+
+                            setCurrentFocusedDocId("");
+                            setCurrentFocusedProblemDocId("");
+                            setQuillContent("");
                           } catch (err) {
                             console.error(
                               "When you delete jimun, there is some problem"
@@ -792,13 +816,14 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
 
   const 문제_저장 = async () => {
     const problemInfoCF = collection(db, "problemInfo");
-    // TODO: Delete console.log
+    const jimunsDocRef = doc(db, "jimuns", connectedJimunId);
+
     console.log("currentFocusedProblemDocId: " + currentFocusedProblemDocId);
 
     if (!currentFocusedProblemDocId) {
       // NOTE: 문제 최초 저장
       try {
-        const result = await addDoc(problemInfoCF, {
+        await addDoc(problemInfoCF, {
           quillContent,
           responseType, // 응답 유형<string>
           symbolType: Number(symbolType), // 기호 유형<number>
@@ -809,8 +834,13 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
           createdAt: new Date(),
           updatedAt: new Date(),
         });
+        const jimunsCF = await getDoc(jimunsDocRef);
 
-        console.log(result);
+        console.log("jimunsCF.data()?.length: " + jimunsCF.data()?.length);
+
+        await updateDoc(jimunsDocRef, {
+          length: jimunsCF.data()?.length ? jimunsCF.data()?.length + 1 : 1,
+        });
 
         alert("성공적으로 문제를 저장 했습니다.");
       } catch (err) {
