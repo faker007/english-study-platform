@@ -29,3 +29,13 @@ export const problemScoreState = atom({
   default: "1" as string | number,
   key: "problemScoreState",
 });
+
+export const problemInfosState = atom({
+  default: [] as any,
+  key: "problemInfosState",
+});
+
+export const shortAnswerState = atom({
+  default: "" as any,
+  key: "shortAnswerState",
+});

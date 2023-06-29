@@ -26,9 +26,11 @@ import {
   currentFocusedJimunIdState,
   currentFocusedProblemIdState,
   problemCorrectAnswerState,
+  problemInfosState,
   problemResponseTypeState,
   problemScoreState,
   problemSymbolTypeState,
+  shortAnswerState,
 } from "../recoil";
 import { quillValue } from "../stores/problem";
 
@@ -37,9 +39,19 @@ export default function ProblemBank() {
   const [problemSets, setProblemSets] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [currentDocId, setCurrentDocId] = useState(""); // 문제 세트, FB Doc id, Modal에서도 사용.
+  const setQuillContent = useSetRecoilState(quillValue);
+  const setCurrentFocusedProblemDocId = useSetRecoilState(
+    currentFocusedProblemIdState
+  );
+  const setCurrentFocusedDocId = useSetRecoilState(currentFocusedJimunIdState);
 
   function 문제_편집_모달_토글() {
     setIsOpen((prev) => !prev);
+    if (isOpen) {
+      setCurrentFocusedDocId("");
+      setCurrentFocusedProblemDocId("");
+      setQuillContent("");
+    }
   }
 
   const 신규_등록 = async () => {
@@ -51,7 +63,7 @@ export default function ProblemBank() {
 
     try {
       await addDoc(problemSetCF, {
-        problemSetName: problemSetName,
+        problemSetName,
         length: 0,
         latestOrder: 0,
         createdAt: new Date(),
@@ -60,6 +72,8 @@ export default function ProblemBank() {
 
       try {
         데이터_가져오기();
+
+        setProblemSetName("");
 
         alert("신규 등록에 성공 했습니다!");
       } catch (err) {
@@ -71,10 +85,6 @@ export default function ProblemBank() {
       alert("신규 등록에 실패 했습니다!");
     }
   };
-
-  const 문제_편집 = async () => {};
-
-  const 문제_내용_확인 = async () => {};
 
   const 데이터_가져오기 = async () => {
     const tempArray: any = [];
@@ -273,7 +283,7 @@ function ModalComponent({
   const [title, setTitle] = useState("");
   const [isShowQuill, setIsShowQuill] = useState(false);
   const [jimuns, setJimuns] = useState([]);
-  const [problemInfos, setProblemInfos] = useState([]);
+  const [problemInfos, setProblemInfos] = useRecoilState(problemInfosState);
   const [isJimun, setIsJimin] = useState(true); // true: 지문 추가, false: 문제 추가
 
   const [quillContent, setQuillContent] = useRecoilState(quillValue);
@@ -306,7 +316,7 @@ function ModalComponent({
     }
 
     try {
-      const result = await addDoc(jimunSetCF, {
+      await addDoc(jimunSetCF, {
         title,
         quillContent,
         length: 0,
@@ -315,7 +325,7 @@ function ModalComponent({
         updatedAt: new Date(),
       });
 
-      console.log(result);
+      await 데이터_가져오기();
     } catch (err) {
       console.log(err);
     }
@@ -351,10 +361,7 @@ function ModalComponent({
     }
   };
 
-  // TODO: 문제 추가
   const 문제_추가 = async () => {
-    // TODO: Get Firestore Doc에 연결된 Id 가져오기
-
     if (currentFocusedDocId) {
       setIsShowQuill(true);
 
@@ -372,13 +379,20 @@ function ModalComponent({
   };
 
   const 데이터_가져오기 = async () => {
-    const tempArray: any = [];
+    const tempArray: any[] = [];
     const jimunsRef = collection(db, "jimuns");
     const q = query(jimunsRef, where("currentDocId", "==", currentDocId));
     const jimunsDocs = await getDocs(q);
 
     jimunsDocs.forEach((jimunsDoc) => {
       tempArray.push({ id: jimunsDoc.id, ...jimunsDoc.data() });
+    });
+
+    tempArray.sort((a, b) => {
+      const orderA = a?.order ?? 0;
+      const orderB = b?.order ?? 0;
+
+      return orderA - orderB;
     });
 
     setJimuns(tempArray);
@@ -403,7 +417,7 @@ function ModalComponent({
 
   // NOTE: 문제 목록 가져 오기
   const 문제_목록_가져오기 = async () => {
-    const tempArray: any = [];
+    const tempArray: any[] = [];
 
     if (!currentFocusedDocId) {
       setProblemInfos(tempArray);
@@ -422,6 +436,15 @@ function ModalComponent({
 
       problemInfoDocs.forEach((probemInfoDoc) => {
         tempArray.push({ id: probemInfoDoc.id, ...probemInfoDoc.data() });
+      });
+
+      tempArray.sort((a, b) => {
+        const orderA = a?.order ?? 0;
+        // @ts-ignore
+        const orderB = b?.order ?? 0;
+
+        // @ts-ignore
+        return orderA - orderB;
       });
 
       setProblemInfos(tempArray);
@@ -537,7 +560,26 @@ function ModalComponent({
                         삭제
                       </button>
 
-                      <button
+                      <input
+                        type={"text"}
+                        placeholder={jimun?.order ? jimun?.order : 0}
+                        onBlur={async (e) => {
+                          // NOTE: 지문의 순서 결정
+                          if (e.target.value) {
+                            const jimunDocRef = doc(db, "jimuns", jimun.id);
+
+                            try {
+                              await updateDoc(jimunDocRef, {
+                                order: Number(e.target.value),
+                              });
+
+                              alert("Good");
+                            } catch (err) {
+                              console.error(err);
+                              alert("Bad");
+                            }
+                          }
+                        }}
                         style={{
                           width: 76,
                           height: 30,
@@ -548,25 +590,7 @@ function ModalComponent({
                           cursor: "pointer",
                           borderRadius: 6,
                         }}
-                        onClick={() => {}}
-                      >
-                        위로
-                      </button>
-                      <button
-                        style={{
-                          width: 76,
-                          height: 30,
-                          backgroundColor: "#fff",
-                          border: "1px solid #d9d9d9",
-                          fontSize: 13,
-                          textAlign: "center",
-                          cursor: "pointer",
-                          borderRadius: 6,
-                        }}
-                        onClick={() => {}}
-                      >
-                        아래로
-                      </button>
+                      />
                     </td>
                   </tr>
                 );
@@ -668,23 +692,39 @@ function ModalComponent({
                       삭제
                     </button>
 
-                    <button
-                      style={{
-                        width: 76,
-                        height: 30,
-                        backgroundColor: "#fff",
-                        border: "1px solid #d9d9d9",
-                        fontSize: 13,
-                        textAlign: "center",
-                        cursor: "pointer",
-                        borderRadius: 6,
-                      }}
-                      onClick={() => {}}
-                    >
-                      위로
-                    </button>
+                    <input
+                      type={"text"}
+                      placeholder={problemInfo?.order ? problemInfo?.order : 0}
+                      onBlur={async (e) => {
+                        // NOTE: 지문의 순서 결정
+                        if (e.target.value) {
+                          const problemInfoDocRef = doc(
+                            db,
+                            "problemInfo",
+                            problemInfo.id
+                          );
 
-                    <button
+                          try {
+                            await updateDoc(problemInfoDocRef, {
+                              order: Number(e.target.value),
+                            });
+
+                            alert("성공적으로 문제의 순서를 설정 했습니다.");
+
+                            const sorted = problemInfos.slice().sort((a, b) => {
+                              const orderA = a?.order ?? 0;
+                              const orderB = b?.order ?? 0;
+
+                              return orderA - orderB;
+                            });
+
+                            setProblemInfos(sorted);
+                          } catch (err) {
+                            console.error(err);
+                            alert("문제의 순서 설정에 실패 했습니다.");
+                          }
+                        }
+                      }}
                       style={{
                         width: 76,
                         height: 30,
@@ -695,10 +735,7 @@ function ModalComponent({
                         cursor: "pointer",
                         borderRadius: 6,
                       }}
-                      onClick={() => {}}
-                    >
-                      아래로
-                    </button>
+                    />
                   </td>
                 </tr>
               );
@@ -782,6 +819,7 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
   const [score, setScore] = useRecoilState(problemScoreState); // 배점
   const [hashTag, setHashTag] = useState("");
   const [problemType, setProblemType] = useState(0);
+  const [shortAnswer, setShortAnswer] = useRecoilState(shortAnswerState); // 단답형 정답
 
   const quillContent = useRecoilValue(quillValue);
 
@@ -791,6 +829,10 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
   const [currentFocusedProblemDoc, setCurrentFocusedProblemDoc] = useState<any>(
     {}
   );
+  const [currentFocusedDocId, setCurrentFocusedDocId] = useRecoilState(
+    currentFocusedJimunIdState
+  );
+  const [problemInfos, setProblemInfos] = useRecoilState(problemInfosState);
 
   const 해설_이미지_업로드 = async (e) => {
     // TODO: 해설_이미지가 업로드 완료 되었을 때, 미리 보기 보여주기
@@ -818,7 +860,11 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
     const problemInfoCF = collection(db, "problemInfo");
     const jimunsDocRef = doc(db, "jimuns", connectedJimunId);
 
-    console.log("currentFocusedProblemDocId: " + currentFocusedProblemDocId);
+    if (responseType === "단답형" && !shortAnswer) {
+      return alert("단답형 인데, 단답형 정답이 없습니다.");
+    } else if (responseType !== "단답형" && shortAnswer) {
+      return alert("단답형 아닌데, 단답형 정답이 있습니다.");
+    }
 
     if (!currentFocusedProblemDocId) {
       // NOTE: 문제 최초 저장
@@ -831,12 +877,12 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
           score: Number(score), // 배점<number>
           problemType: 0, // TODO: Do not hard-coded here
           connectedJimunId,
+          shortAnswer: shortAnswer ? shortAnswer : "",
           createdAt: new Date(),
           updatedAt: new Date(),
         });
-        const jimunsCF = await getDoc(jimunsDocRef);
 
-        console.log("jimunsCF.data()?.length: " + jimunsCF.data()?.length);
+        const jimunsCF = await getDoc(jimunsDocRef);
 
         await updateDoc(jimunsDocRef, {
           length: jimunsCF.data()?.length ? jimunsCF.data()?.length + 1 : 1,
@@ -858,7 +904,7 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
       const problemInfoDoc = getDoc(problemInfoDocRef);
 
       try {
-        const result = await updateDoc(problemInfoDocRef, {
+        await updateDoc(problemInfoDocRef, {
           quillContent,
           responseType, // 응답 유형<string>
           symbolType: Number(symbolType), // 기호 유형<number>
@@ -866,11 +912,10 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
           score: Number(score), // 배점<number>
           problemType: 0, // TODO: Do not hard-coded here
           connectedJimunId,
+          shortAnswer: shortAnswer ? shortAnswer : "",
           createdAt: (await problemInfoDoc).data()?.createdAt ?? new Date(),
           updatedAt: new Date(),
         });
-
-        console.log(result);
 
         alert("성공적으로 문제를 수정 했습니다.");
       } catch (err) {
@@ -878,6 +923,39 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
 
         console.log(err);
       }
+    }
+
+    const tempArray: any[] = [];
+
+    if (!currentFocusedDocId) {
+      setProblemInfos(tempArray);
+
+      return;
+    }
+
+    if (currentFocusedDocId) {
+      const problemInfoCF = collection(db, "problemInfo");
+      const q = query(
+        problemInfoCF,
+        where("connectedJimunId", "==", currentFocusedDocId)
+      );
+
+      const problemInfoDocs = await getDocs(q);
+
+      problemInfoDocs.forEach((probemInfoDoc) => {
+        tempArray.push({ id: probemInfoDoc.id, ...probemInfoDoc.data() });
+      });
+
+      tempArray.sort((a, b) => {
+        const orderA = a?.order ?? 0;
+        // @ts-ignore
+        const orderB = b?.order ?? 0;
+
+        // @ts-ignore
+        return orderA - orderB;
+      });
+
+      setProblemInfos(tempArray);
     }
   };
 
@@ -892,8 +970,6 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
         const problemInfoDoc = await getDoc(problemInfoDocRef);
 
         setCurrentFocusedProblemDoc(problemInfoDoc.data());
-
-        console.log(problemInfoDoc.data());
       }
     };
 
@@ -915,6 +991,12 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
 
     if (currentFocusedProblemDoc.score) {
       setScore(currentFocusedProblemDoc.score);
+    }
+
+    if (currentFocusedProblemDoc?.shortAnswer) {
+      setShortAnswer(currentFocusedProblemDoc.shortAnswer);
+    } else {
+      setShortAnswer("");
     }
   }, [currentFocusedProblemDoc]);
 
@@ -943,17 +1025,16 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
       <div className="flex">
         <div className="flex flex-col">
           <p>해설 이미지</p>
-          <p>해시 태그</p>
           <p>응답 유형</p>
           <p>기호 유형</p>
           <p>정답</p>
           <p>배점</p>
           <p>문제 유형</p>
+          <p>단답형 정답</p>
         </div>
 
         <div className="flex flex-col">
           <input type={"file"} onChange={해설_이미지_업로드} />
-          <input type={"text"} />
 
           {/* 응답 유형 */}
           <div className="flex">
@@ -1039,7 +1120,15 @@ function ProblemInfoComponent({ isJimun }: { isJimun: boolean }) {
           <select onChange={() => {}}>
             <option value="1">(문제 유형 없음)</option>
           </select>
-          <input type={"text"} />
+
+          {/* 단답형 정답 */}
+          <input
+            type={"text"}
+            value={shortAnswer}
+            onChange={(e) => {
+              setShortAnswer(e.target.value);
+            }}
+          />
         </div>
       </div>
       {/* TODO: 해설 이미지 input type: image */}
