@@ -14,7 +14,7 @@ export const PROBLEM_BANK_LNB_ITEMS: ILNBItem[] = [
 ];
 
 export const TEST_MANAGE_LNB_ITEMS: ILNBItem[] = [
-  { text: "시험 폴더", url: "#" },
+  { text: "시험 폴더", url: "/test-folder" },
   { text: "시험 정보", url: "#" },
   { text: "시험별 제출 조회", url: "#" },
   { text: "학생별 제출 조회", url: "#" },

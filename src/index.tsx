@@ -1,25 +1,26 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
 import "./index.css";
 import "./customCSS.css";
 
-import App from "./App";
+import React from "react";
+import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { RecoilRoot } from "recoil";
+
+import App from "./App";
 import GNBWrapper from "./components/Common/GNB/Wrapper";
+import { LOCALSTORAGE_USER_TOKEN } from "./constants/Login";
+/** Own pages */
 import Login from "./pages/login";
+import ProblemBank from "./pages/ProblemBank";
 import Router, { IToken } from "./pages/router";
-import StudentList from "./pages/students/list";
 import Students from "./pages/students";
 import StudentGroup from "./pages/students/group";
-import { RecoilRoot } from "recoil";
-import { userState } from "./stores/user";
-import { LOCALSTORAGE_USER_TOKEN } from "./constants/Login";
+import StudentList from "./pages/students/list";
 import Teachers from "./pages/teachers";
-import TeacherList from "./pages/teachers/list";
 import TeacherGroup from "./pages/teachers/group";
-
-/** Own pages */
-import ProblemBank from "./pages/ProblemBank";
+import TeacherList from "./pages/teachers/list";
+import TestFolder from "./pages/TestFolder";
+import { userState } from "./stores/user";
 
 const router = createBrowserRouter([
   {
@@ -47,14 +48,18 @@ const router = createBrowserRouter([
               { path: "group", element: <TeacherGroup /> },
             ],
           },
+          {
+            path: "/problem-bank",
+            element: <ProblemBank />,
+          },
+          {
+            path: "/test-folder",
+            element: <TestFolder />,
+          },
         ],
       },
       { path: "/login", element: <Login /> },
     ],
-  },
-  {
-    path: "/problem-bank",
-    element: <ProblemBank />,
   },
 ]);
 
