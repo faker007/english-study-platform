@@ -11,7 +11,7 @@ function App() {
 
   return (
     <DefaultLayout>
-      <button
+      {/* <button
         onClick={togglOpen}
         className="rounded-md bg-black px-10 py-3 font-medium text-white"
       >
@@ -19,7 +19,7 @@ function App() {
       </button>
       <Modal width={300} height={200} isOpen={isOpen} toggleOpen={togglOpen}>
         {ModalContent}
-      </Modal>
+      </Modal> */}
     </DefaultLayout>
   );
 }
