@@ -1,8 +1,8 @@
 import { DEFAULT_IMAGE_DIR } from "..";
 import { RegisterOptions } from "react-hook-form";
 
-export const LOGIN_BG_STUDENT = `${DEFAULT_IMAGE_DIR}/login/student.png`;
-export const LOGIN_BG_TEACHER = `${DEFAULT_IMAGE_DIR}/login/teacher.png`;
+export const LOGIN_BG_STUDENT = `${DEFAULT_IMAGE_DIR}/login/student.jpeg`;
+export const LOGIN_BG_TEACHER = `${DEFAULT_IMAGE_DIR}/login/teacher.jpeg`;
 
 export const ID_INPUT_OPTIONS: RegisterOptions = {
   required: {
